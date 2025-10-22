@@ -8,6 +8,9 @@
 //! - Contextual stopword filtering
 //! - Preserves negations, comparators, domain terms
 
+use crate::compressor::{CompressionResult, OutputFormat};
+#[cfg(feature = "image")]
+use crate::image_renderer::{ImageRenderer, ImageRendererConfig};
 use regex::Regex;
 use std::collections::HashMap;
 use std::sync::OnceLock;
@@ -114,6 +117,7 @@ impl Default for StatisticalFilterConfig {
 }
 
 /// Statistical token filter (model-free alternative to LLMLingua)
+#[derive(Debug)]
 pub struct StatisticalFilter {
     config: StatisticalFilterConfig,
 }
@@ -539,6 +543,76 @@ impl StatisticalFilter {
             .map(|&idx| words[idx])
             .collect::<Vec<_>>()
             .join(" ")
+    }
+
+    /// Compress text and optionally render to image.
+    ///
+    /// This method performs statistical compression and can output the result
+    /// as either plain text or as a 1024x1024 PNG image for vision model consumption.
+    ///
+    /// # Arguments
+    ///
+    /// * `text` - The input text to compress
+    /// * `format` - Output format (Text or Image)
+    ///
+    /// # Returns
+    ///
+    /// A `CompressionResult` containing the compressed text and optional image data.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// use compression_prompt::{StatisticalFilter, OutputFormat};
+    ///
+    /// let filter = StatisticalFilter::default();
+    /// let result = filter.compress_with_format("long text...", OutputFormat::Image)?;
+    ///
+    /// if let Some(img_data) = result.image_data {
+    ///     std::fs::write("output.png", img_data)?;
+    /// }
+    /// ```
+    pub fn compress_with_format(
+        &self,
+        text: &str,
+        format: OutputFormat,
+    ) -> Result<CompressionResult, Box<dyn std::error::Error>> {
+        // Perform statistical compression
+        let compressed = self.compress(text);
+
+        // Calculate token counts (rough estimation: words / 4)
+        let original_tokens = text.split_whitespace().count();
+        let compressed_tokens = compressed.split_whitespace().count();
+        let compression_ratio = if original_tokens > 0 {
+            compressed_tokens as f32 / original_tokens as f32
+        } else {
+            1.0
+        };
+        let tokens_removed = original_tokens.saturating_sub(compressed_tokens);
+
+        // Generate image if requested
+        let image_data = if format == OutputFormat::Image {
+            #[cfg(feature = "image")]
+            {
+                let renderer = ImageRenderer::new(ImageRendererConfig::default());
+                Some(renderer.render_to_png(&compressed)?)
+            }
+            #[cfg(not(feature = "image"))]
+            {
+                None // Image feature not enabled
+            }
+        } else {
+            None
+        };
+
+        Ok(CompressionResult {
+            compressed,
+            image_data,
+            format,
+            original_tokens,
+            compressed_tokens,
+            compression_ratio,
+            tokens_removed,
+        })
     }
 
     /// Calculate IDF scores

@@ -1,7 +1,17 @@
 //! Main compression pipeline and result structures.
 
+use crate::statistical_filter::{StatisticalFilter, StatisticalFilterConfig};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+
+/// Output format for compression result.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum OutputFormat {
+    /// Plain text output (default).
+    Text,
+    /// PNG image output (1024x1024 monospace).
+    Image,
+}
 
 /// Compression errors.
 #[derive(Error, Debug)]
@@ -41,8 +51,15 @@ impl Default for CompressorConfig {
 /// Result of compression operation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CompressionResult {
-    /// The compressed text.
+    /// The compressed text (always included).
     pub compressed: String,
+
+    /// Optional image output (PNG bytes).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub image_data: Option<Vec<u8>>,
+
+    /// Output format used.
+    pub format: OutputFormat,
 
     /// Original token count.
     pub original_tokens: usize,
@@ -62,22 +79,57 @@ pub struct CompressionResult {
 pub struct Compressor {
     /// Compression configuration.
     pub config: CompressorConfig,
+    /// Statistical filter instance
+    filter: StatisticalFilter,
 }
 
 impl Compressor {
     /// Create a new compressor with given configuration.
     pub fn new(config: CompressorConfig) -> Self {
-        Self { config }
+        let filter_config = StatisticalFilterConfig {
+            compression_ratio: config.target_ratio,
+            ..Default::default()
+        };
+        let filter = StatisticalFilter::new(filter_config);
+        Self { config, filter }
     }
 
-    /// Compress input text.
+    /// Create a new compressor with custom statistical filter configuration.
+    pub fn with_filter_config(config: CompressorConfig, filter_config: StatisticalFilterConfig) -> Self {
+        let filter = StatisticalFilter::new(filter_config);
+        Self { config, filter }
+    }
+
+    /// Compress input text using statistical filtering.
     ///
     /// Returns an error if compression would be counterproductive.
-    /// 
-    /// TODO: Implement statistical filtering strategy
     pub fn compress(
         &self,
         input: &str,
+    ) -> Result<CompressionResult, CompressionError> {
+        self.compress_with_format(input, OutputFormat::Text)
+    }
+
+    /// Compress input text with specified output format.
+    ///
+    /// # Arguments
+    ///
+    /// * `input` - The text to compress
+    /// * `format` - Output format (Text or Image)
+    ///
+    /// # Returns
+    ///
+    /// CompressionResult with compressed text and optional image data.
+    ///
+    /// # Errors
+    ///
+    /// Returns `CompressionError` if:
+    /// - Input is too short (< min_input_bytes or < min_input_tokens)
+    /// - Compression would increase size (ratio >= 1.0)
+    pub fn compress_with_format(
+        &self,
+        input: &str,
+        format: OutputFormat,
     ) -> Result<CompressionResult, CompressionError> {
         // Step 1: Check input size (bytes)
         let input_bytes = input.len();
@@ -97,9 +149,8 @@ impl Compressor {
             ));
         }
 
-        // Step 3: Apply statistical filtering (placeholder for new strategy)
-        // TODO: Implement statistical filtering based on statistical_filter module
-        let compressed = input.to_string();
+        // Step 3: Apply statistical filtering
+        let compressed = self.filter.compress(input);
 
         // Step 4: Validate compression ratio
         let compressed_tokens = compressed.chars().count() / 4;
@@ -111,8 +162,29 @@ impl Compressor {
 
         let tokens_removed = original_tokens.saturating_sub(compressed_tokens);
 
+        // Step 5: Generate image if requested
+        let image_data = if format == OutputFormat::Image {
+            #[cfg(feature = "image")]
+            {
+                use crate::image_renderer::ImageRenderer;
+                let renderer = ImageRenderer::default();
+                match renderer.render_to_png(&compressed) {
+                    Ok(data) => Some(data),
+                    Err(_) => None, // Fallback: no image on error
+                }
+            }
+            #[cfg(not(feature = "image"))]
+            {
+                None // Image feature not enabled
+            }
+        } else {
+            None
+        };
+
         Ok(CompressionResult {
             compressed,
+            image_data,
+            format,
             original_tokens,
             compressed_tokens,
             compression_ratio,

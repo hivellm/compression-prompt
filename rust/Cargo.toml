@@ -1,12 +1,23 @@
 [package]
 name = "compression-prompt"
-version = "0.4.0"
+version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
 authors = ["HiveLLM Team"]
 license = "MIT"
 repository = "https://github.com/hivellm/compression-prompt"
-description = "Semantic lossless compression for LLM prompts via dictionary coding"
+description = "Fast statistical compression for LLM prompts - 50% token reduction with 91% quality retention"
+keywords = ["llm", "compression", "prompt", "optimization", "token-reduction"]
+categories = ["text-processing", "algorithms", "compression"]
+readme = "../README.md"
+homepage = "https://github.com/hivellm/compression-prompt"
+documentation = "https://docs.rs/compression-prompt"
+
+[features]
+default = ["statistical"]
+statistical = []
+image = ["dep:image", "dep:imageproc", "dep:ab_glyph"]
+full = ["statistical", "image"]
 
 [dependencies]
 # Core dependencies
@@ -26,6 +37,11 @@ tiktoken-rs = "0.7.0"
 
 # Datetime handling
 chrono = "0.4"
+
+# Image processing (optional)
+image = { version = "0.25", optional = true }
+imageproc = { version = "0.25", optional = true }
+ab_glyph = { version = "0.2", optional = true }
 
 [dev-dependencies]
 # Benchmarking

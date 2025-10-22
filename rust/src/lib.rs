@@ -34,10 +34,14 @@
 #![warn(clippy::all)]
 
 pub mod compressor;
+#[cfg(feature = "image")]
+pub mod image_renderer;
 pub mod quality_metrics;
 pub mod statistical_filter;
 
-pub use compressor::{CompressionResult, Compressor, CompressorConfig};
+pub use compressor::{CompressionResult, Compressor, CompressorConfig, OutputFormat};
+#[cfg(feature = "image")]
+pub use image_renderer::{ImageRenderer, ImageRendererConfig};
 pub use statistical_filter::{StatisticalFilter, StatisticalFilterConfig};
 
 /// Library version
