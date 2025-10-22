@@ -39,8 +39,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("✅ PNG generated:");
     println!("  File: format_test.png");
-    println!("  Size: {:.2} MB ({} bytes)", 
-        png_data.len() as f32 / 1_048_576.0, 
+    println!(
+        "  Size: {:.2} MB ({} bytes)",
+        png_data.len() as f32 / 1_048_576.0,
         png_data.len()
     );
     println!("  Compression: Lossless");
@@ -75,11 +76,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         println!("✅ JPEG Quality {} - {}:", quality, label);
         println!("  File: {}", filename);
+        println!("  Size: {:.2} MB ({} bytes)", size_mb, jpeg_data.len());
         println!(
-            "  Size: {:.2} MB ({} bytes)",
-            size_mb, jpeg_data.len()
-        );
-        println!("  vs PNG: -{:.1}% ({:.2} MB saved)", 
+            "  vs PNG: -{:.1}% ({:.2} MB saved)",
             reduction,
             (png_data.len() - jpeg_data.len()) as f32 / 1_048_576.0
         );
@@ -100,13 +99,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!();
     println!("PNG:");
     println!("  ✓ Lossless (texto perfeitamente legível)");
-    println!("  ✗ Arquivo maior: {:.2} MB", png_data.len() as f32 / 1_048_576.0);
+    println!(
+        "  ✗ Arquivo maior: {:.2} MB",
+        png_data.len() as f32 / 1_048_576.0
+    );
     println!();
     println!("JPEG Quality {} (RECOMENDADO):", best_quality);
     println!("  ✓ Redução de {:.1}% no tamanho", best_ratio);
-    println!("  ✓ Economia de {:.2} MB", (png_data.len() - best_size) as f32 / 1_048_576.0);
+    println!(
+        "  ✓ Economia de {:.2} MB",
+        (png_data.len() - best_size) as f32 / 1_048_576.0
+    );
     println!("  ✓ Ainda legível para OCR/Vision models");
-    println!("  ✓ Tamanho final: {:.2} MB", best_size as f32 / 1_048_576.0);
+    println!(
+        "  ✓ Tamanho final: {:.2} MB",
+        best_size as f32 / 1_048_576.0
+    );
     println!();
     println!("💡 Para máxima economia com qualidade aceitável:");
     println!("   - Use JPEG quality 85 para documentos técnicos");
@@ -116,9 +124,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("📁 Arquivos gerados:");
     println!("   - format_test.png (PNG)");
     for (quality, _) in jpeg_qualities {
-        println!("   - format_test_q{}.jpg (JPEG quality {})", quality, quality);
+        println!(
+            "   - format_test_q{}.jpg (JPEG quality {})",
+            quality, quality
+        );
     }
 
     Ok(())
 }
-

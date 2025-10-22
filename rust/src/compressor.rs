@@ -95,7 +95,10 @@ impl Compressor {
     }
 
     /// Create a new compressor with custom statistical filter configuration.
-    pub fn with_filter_config(config: CompressorConfig, filter_config: StatisticalFilterConfig) -> Self {
+    pub fn with_filter_config(
+        config: CompressorConfig,
+        filter_config: StatisticalFilterConfig,
+    ) -> Self {
         let filter = StatisticalFilter::new(filter_config);
         Self { config, filter }
     }
@@ -103,10 +106,7 @@ impl Compressor {
     /// Compress input text using statistical filtering.
     ///
     /// Returns an error if compression would be counterproductive.
-    pub fn compress(
-        &self,
-        input: &str,
-    ) -> Result<CompressionResult, CompressionError> {
+    pub fn compress(&self, input: &str) -> Result<CompressionResult, CompressionError> {
         self.compress_with_format(input, OutputFormat::Text)
     }
 

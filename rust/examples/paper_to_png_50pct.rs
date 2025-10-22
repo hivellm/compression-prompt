@@ -7,12 +7,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Read original paper
     let paper_path = "../benchmarks/datasets/arxiv_markdown/1211.5063.md";
-    
+
     if !Path::new(paper_path).exists() {
         eprintln!("❌ Paper file not found: {}", paper_path);
         return Err("Paper file not found".into());
     }
-    
+
     let text = fs::read_to_string(paper_path)?;
 
     println!("📝 Original paper:");
@@ -26,9 +26,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         compression_ratio: 0.5,
         ..Default::default()
     });
-    
+
     let compressed = filter.compress(&text);
-    
+
     let original_tokens = text.split_whitespace().count();
     let compressed_tokens = compressed.split_whitespace().count();
     let compression_ratio = compressed_tokens as f32 / original_tokens as f32;
@@ -37,7 +37,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  Original tokens: {}", original_tokens);
     println!("  Compressed tokens: {}", compressed_tokens);
     println!("  Compression ratio: {:.1}%", compression_ratio * 100.0);
-    println!("  Tokens saved: {} ({:.1}%)", 
+    println!(
+        "  Tokens saved: {} ({:.1}%)",
         original_tokens - compressed_tokens,
         (1.0 - compression_ratio) * 100.0
     );
@@ -51,10 +52,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Generate PNG image(s)
     let renderer = ImageRenderer::default();
-    
+
     println!("🖼️  Generating PNG image(s)...");
     println!();
-    
+
     // Try to render in one image first
     match renderer.render_to_png(&compressed) {
         Ok(png_data) => {
@@ -64,13 +65,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             println!("✅ PNG image generated (1 page):");
             println!("  File: {}", png_filename);
-            println!("  Size: {:.2} MB ({} bytes)", 
-                png_data.len() as f32 / 1_048_576.0, 
+            println!(
+                "  Size: {:.2} MB ({} bytes)",
+                png_data.len() as f32 / 1_048_576.0,
                 png_data.len()
             );
             println!("  Dimensions: 1024x1024");
             println!("  Font size: 12.5pt");
-            
+
             if png_data.len() >= 8 && &png_data[0..8] == &[137, 80, 78, 71, 13, 10, 26, 10] {
                 println!("  ✓ Valid PNG signature");
             }
@@ -107,7 +109,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             for (i, chunk) in chunks.iter().enumerate() {
                 let page_num = i + 1;
                 let filename = format!("rnn_paper_compressed_page{}.png", page_num);
-                
+
                 let png_data = renderer.render_to_png(chunk)?;
                 fs::write(&filename, &png_data)?;
                 total_size += png_data.len();
@@ -138,4 +140,3 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

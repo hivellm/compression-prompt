@@ -1,4 +1,6 @@
-use compression_prompt::{ImageRenderer, ImageRendererConfig, StatisticalFilter, StatisticalFilterConfig};
+use compression_prompt::{
+    ImageRenderer, ImageRendererConfig, StatisticalFilter, StatisticalFilterConfig,
+};
 use std::fs;
 use std::path::Path;
 
@@ -8,12 +10,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Read original paper
     let paper_path = "../benchmarks/datasets/arxiv_markdown/1211.5063.md";
-    
+
     if !Path::new(paper_path).exists() {
         eprintln!("❌ Paper file not found: {}", paper_path);
         return Err("Paper file not found".into());
     }
-    
+
     let text = fs::read_to_string(paper_path)?;
 
     println!("📝 Original paper:");
@@ -33,9 +35,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         compression_ratio: 0.5,
         ..Default::default()
     });
-    
+
     let compressed = filter.compress(&text);
-    
+
     let original_tokens = text.split_whitespace().count();
     let compressed_tokens = compressed.split_whitespace().count();
     let compression_ratio = compressed_tokens as f32 / original_tokens as f32;
@@ -54,11 +56,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Configure renderer with LARGER font for better readability
     let config = ImageRendererConfig {
-        font_size: 16.0,      // Fonte maior
-        line_spacing: 1.3,     // Mais espaçamento
+        font_size: 16.0,   // Fonte maior
+        line_spacing: 1.3, // Mais espaçamento
         margin_x: 30,
         margin_y: 30,
-        min_font_size: 10.0,   // Mínimo maior
+        min_font_size: 10.0, // Mínimo maior
         ..Default::default()
     };
 
@@ -72,11 +74,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     match renderer.render_to_png(&compressed) {
         Ok(png_data) => {
             fs::write("rnn_paper_readable.png", &png_data)?;
-            
+
             println!("✅ PNG image generated:");
             println!("  File: rnn_paper_readable.png");
-            println!("  Size: {:.2} MB ({} bytes)", 
-                png_data.len() as f32 / 1_048_576.0, 
+            println!(
+                "  Size: {:.2} MB ({} bytes)",
+                png_data.len() as f32 / 1_048_576.0,
                 png_data.len()
             );
             println!("  Dimensions: 1024x1024");
@@ -105,7 +108,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             for (i, chunk) in chunks.iter().enumerate() {
                 let page_num = i + 1;
                 let filename = format!("rnn_paper_readable_page{}.png", page_num);
-                
+
                 let png_data = renderer.render_to_png(chunk)?;
                 fs::write(&filename, &png_data)?;
 
@@ -137,4 +140,3 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

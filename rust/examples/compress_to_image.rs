@@ -8,8 +8,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let test_file = "../large_test_input.txt";
     let text = fs::read_to_string(test_file)?;
 
-    println!("📝 Original text ({} chars, {} words)", 
-        text.len(), 
+    println!(
+        "📝 Original text ({} chars, {} words)",
+        text.len(),
         text.split_whitespace().count()
     );
 
@@ -26,7 +27,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("✅ Compressed to text:");
     println!("  Original tokens: {}", result_text.original_tokens);
     println!("  Compressed tokens: {}", result_text.compressed_tokens);
-    println!("  Compression ratio: {:.1}%", result_text.compression_ratio * 100.0);
+    println!(
+        "  Compression ratio: {:.1}%",
+        result_text.compression_ratio * 100.0
+    );
     println!("  Tokens saved: {}", result_text.tokens_removed);
     println!("  Format: {:?}", result_text.format);
 
@@ -44,19 +48,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("✅ Compressed to image:");
     println!("  Original tokens: {}", result_image.original_tokens);
     println!("  Compressed tokens: {}", result_image.compressed_tokens);
-    println!("  Compression ratio: {:.1}%", result_image.compression_ratio * 100.0);
+    println!(
+        "  Compression ratio: {:.1}%",
+        result_image.compression_ratio * 100.0
+    );
     println!("  Tokens saved: {}", result_image.tokens_removed);
     println!("  Format: {:?}", result_image.format);
 
     if let Some(img_data) = &result_image.image_data {
-        println!("  Image size: {} bytes ({:.1} KB)", 
-            img_data.len(), 
+        println!(
+            "  Image size: {} bytes ({:.1} KB)",
+            img_data.len(),
             img_data.len() as f32 / 1024.0
         );
-        
+
         fs::write("output_compressed.png", img_data)?;
         println!("  Saved: output_compressed.png");
-        
+
         // Verify PNG signature
         if img_data.len() >= 8 && &img_data[0..8] == &[137, 80, 78, 71, 13, 10, 26, 10] {
             println!("  ✓ Valid PNG signature");
@@ -76,15 +84,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let result_aggressive = filter_aggressive.compress_with_format(&text, OutputFormat::Image)?;
 
     println!("✅ Aggressive compression:");
-    println!("  Compression ratio: {:.1}%", result_aggressive.compression_ratio * 100.0);
+    println!(
+        "  Compression ratio: {:.1}%",
+        result_aggressive.compression_ratio * 100.0
+    );
     println!("  Tokens saved: {}", result_aggressive.tokens_removed);
 
     if let Some(img_data) = &result_aggressive.image_data {
-        println!("  Image size: {} bytes ({:.1} KB)", 
-            img_data.len(), 
+        println!(
+            "  Image size: {} bytes ({:.1} KB)",
+            img_data.len(),
             img_data.len() as f32 / 1024.0
         );
-        
+
         fs::write("output_compressed_30pct.png", img_data)?;
         println!("  Saved: output_compressed_30pct.png");
     }
@@ -102,15 +114,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let result_light = filter_light.compress_with_format(&text, OutputFormat::Image)?;
 
     println!("✅ Light compression:");
-    println!("  Compression ratio: {:.1}%", result_light.compression_ratio * 100.0);
+    println!(
+        "  Compression ratio: {:.1}%",
+        result_light.compression_ratio * 100.0
+    );
     println!("  Tokens saved: {}", result_light.tokens_removed);
 
     if let Some(img_data) = &result_light.image_data {
-        println!("  Image size: {} bytes ({:.1} KB)", 
-            img_data.len(), 
+        println!(
+            "  Image size: {} bytes ({:.1} KB)",
+            img_data.len(),
             img_data.len() as f32 / 1024.0
         );
-        
+
         fs::write("output_compressed_70pct.png", img_data)?;
         println!("  Saved: output_compressed_70pct.png");
     }
@@ -127,4 +143,3 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

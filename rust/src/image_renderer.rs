@@ -5,7 +5,7 @@
 //! for vision model processing.
 
 use ab_glyph::{Font, FontRef, PxScale, ScaleFont};
-use image::{codecs::jpeg::JpegEncoder, ImageBuffer, ImageFormat, Rgb, RgbImage};
+use image::{ImageBuffer, ImageFormat, Rgb, RgbImage, codecs::jpeg::JpegEncoder};
 use std::io::Cursor;
 use thiserror::Error;
 
@@ -61,7 +61,7 @@ impl Default for ImageRendererConfig {
         Self {
             width: 1024,
             height: 1024,
-            font_size: 12.5,  // Aumentado levemente de 12.0 para 12.5 (melhor legibilidade)
+            font_size: 12.5, // Aumentado levemente de 12.0 para 12.5 (melhor legibilidade)
             line_spacing: 1.2,
             margin_x: 20,
             margin_y: 20,
@@ -128,7 +128,12 @@ impl ImageRenderer {
     }
 
     /// Internal method to render text to any supported image format.
-    fn render_to_format(&self, text: &str, format: ImageFormat, quality: u8) -> Result<Vec<u8>, ImageError> {
+    fn render_to_format(
+        &self,
+        text: &str,
+        format: ImageFormat,
+        quality: u8,
+    ) -> Result<Vec<u8>, ImageError> {
         // Load font
         let font = FontRef::try_from_slice(self.font_data)
             .map_err(|e| ImageError::FontError(format!("{:?}", e)))?;
@@ -152,7 +157,7 @@ impl ImageRenderer {
         // Encode to requested format
         let mut image_data = Vec::new();
         let mut cursor = Cursor::new(&mut image_data);
-        
+
         match format {
             ImageFormat::Png => {
                 img.write_to(&mut cursor, ImageFormat::Png)?;
@@ -167,16 +172,14 @@ impl ImageRenderer {
                 )?;
             }
             _ => {
-                return Err(ImageError::EncodingError(
-                    image::ImageError::Unsupported(
-                        image::error::UnsupportedError::from_format_and_kind(
+                return Err(ImageError::EncodingError(image::ImageError::Unsupported(
+                    image::error::UnsupportedError::from_format_and_kind(
+                        image::error::ImageFormatHint::Unknown,
+                        image::error::UnsupportedErrorKind::Format(
                             image::error::ImageFormatHint::Unknown,
-                            image::error::UnsupportedErrorKind::Format(
-                                image::error::ImageFormatHint::Unknown
-                            )
-                        )
-                    )
-                ));
+                        ),
+                    ),
+                )));
             }
         }
 
@@ -186,11 +189,7 @@ impl ImageRenderer {
     /// Calculate optimal font size to fit text in image.
     ///
     /// Starts with config font_size and reduces until text fits.
-    fn calculate_optimal_font_size(
-        &self,
-        text: &str,
-        font: &FontRef,
-    ) -> Result<f32, ImageError> {
+    fn calculate_optimal_font_size(&self, text: &str, font: &FontRef) -> Result<f32, ImageError> {
         let mut font_size = self.config.font_size;
 
         // Try progressively smaller font sizes
@@ -214,8 +213,7 @@ impl ImageRenderer {
 
     /// Calculate maximum number of lines that fit in image height.
     fn calculate_max_lines(&self, font_size: f32) -> usize {
-        let available_height =
-            self.config.height - (self.config.margin_y * 2);
+        let available_height = self.config.height - (self.config.margin_y * 2);
         let line_height = (font_size * self.config.line_spacing) as u32;
 
         if line_height == 0 {
@@ -230,8 +228,7 @@ impl ImageRenderer {
         let scale = PxScale::from(font_size);
         let scaled_font = font.as_scaled(scale);
 
-        let available_width =
-            (self.config.width - (self.config.margin_x * 2)) as f32;
+        let available_width = (self.config.width - (self.config.margin_x * 2)) as f32;
 
         let mut lines = Vec::new();
         let mut current_line = String::new();
@@ -270,13 +267,7 @@ impl ImageRenderer {
     }
 
     /// Render lines of text onto the image buffer.
-    fn render_lines(
-        &self,
-        img: &mut RgbImage,
-        lines: &[String],
-        font_size: f32,
-        font: &FontRef,
-    ) {
+    fn render_lines(&self, img: &mut RgbImage, lines: &[String], font_size: f32, font: &FontRef) {
         let scale = PxScale::from(font_size);
         let scaled_font = font.as_scaled(scale);
 
@@ -308,11 +299,14 @@ impl ImageRenderer {
 
                             let bg = img.get_pixel(px, py);
                             let r = (self.config.text_color[0] as f32 * alpha
-                                + bg[0] as f32 * inv_alpha) as u8;
+                                + bg[0] as f32 * inv_alpha)
+                                as u8;
                             let g = (self.config.text_color[1] as f32 * alpha
-                                + bg[1] as f32 * inv_alpha) as u8;
+                                + bg[1] as f32 * inv_alpha)
+                                as u8;
                             let b = (self.config.text_color[2] as f32 * alpha
-                                + bg[2] as f32 * inv_alpha) as u8;
+                                + bg[2] as f32 * inv_alpha)
+                                as u8;
 
                             img.put_pixel(px, py, Rgb([r, g, b]));
                         }
@@ -363,7 +357,7 @@ mod tests {
 
         let png_data = result.unwrap();
         assert!(!png_data.is_empty());
-        
+
         // Verify PNG signature
         assert_eq!(&png_data[0..8], &[137, 80, 78, 71, 13, 10, 26, 10]);
     }
@@ -402,4 +396,3 @@ mod tests {
         assert!(result.is_ok());
     }
 }
-

@@ -45,7 +45,7 @@ struct Config {
 impl Config {
     fn parse_args() -> Result<Self, String> {
         let args: Vec<String> = env::args().collect();
-        
+
         let mut config = Config {
             input_file: None,
             output_file: None,
@@ -54,7 +54,7 @@ impl Config {
             output_format: OutputFormatType::Text,
             jpeg_quality: 85,
         };
-        
+
         let mut i = 1;
         while i < args.len() {
             match args[i].as_str() {
@@ -70,7 +70,7 @@ impl Config {
                     config.compression_ratio = args[i]
                         .parse::<f32>()
                         .map_err(|_| format!("Invalid ratio: {}", args[i]))?;
-                    
+
                     if !(0.0..=1.0).contains(&config.compression_ratio) {
                         return Err("Ratio must be between 0.0 and 1.0".to_string());
                     }
@@ -91,7 +91,12 @@ impl Config {
                         "text" => OutputFormatType::Text,
                         "png" => OutputFormatType::Png,
                         "jpeg" | "jpg" => OutputFormatType::Jpeg,
-                        _ => return Err(format!("Invalid format: {} (use: text, png, jpeg)", args[i])),
+                        _ => {
+                            return Err(format!(
+                                "Invalid format: {} (use: text, png, jpeg)",
+                                args[i]
+                            ));
+                        }
                     };
                 }
                 "-q" | "--quality" => {
@@ -102,7 +107,7 @@ impl Config {
                     config.jpeg_quality = args[i]
                         .parse::<u8>()
                         .map_err(|_| format!("Invalid quality: {}", args[i]))?;
-                    
+
                     if !(1..=100).contains(&config.jpeg_quality) {
                         return Err("Quality must be between 1 and 100".to_string());
                     }
@@ -119,7 +124,7 @@ impl Config {
             }
             i += 1;
         }
-        
+
         Ok(config)
     }
 }
@@ -153,7 +158,7 @@ fn main() {
             process::exit(1);
         }
     };
-    
+
     // Read input
     let input = match read_input(&config) {
         Ok(text) => text,
@@ -162,21 +167,21 @@ fn main() {
             process::exit(1);
         }
     };
-    
+
     // Configure compressor
     let compressor_config = CompressorConfig {
         target_ratio: config.compression_ratio,
-        min_input_bytes: 100,  // Lower threshold for CLI
+        min_input_bytes: 100, // Lower threshold for CLI
         min_input_tokens: 10,
     };
-    
+
     let filter_config = StatisticalFilterConfig {
         compression_ratio: config.compression_ratio,
         ..Default::default()
     };
-    
+
     let compressor = Compressor::with_filter_config(compressor_config, filter_config);
-    
+
     // Determine output format
     let output_format = match config.output_format {
         OutputFormatType::Text => OutputFormat::Text,
@@ -191,7 +196,7 @@ fn main() {
             OutputFormat::Image
         }
     };
-    
+
     // Compress
     let result = match compressor.compress_with_format(&input, output_format) {
         Ok(r) => r,
@@ -200,18 +205,24 @@ fn main() {
             process::exit(1);
         }
     };
-    
+
     // Show stats if requested
     if config.show_stats {
         eprintln!("Compression Statistics:");
         eprintln!("  Original tokens:   {}", result.original_tokens);
         eprintln!("  Compressed tokens: {}", result.compressed_tokens);
         eprintln!("  Tokens removed:    {}", result.tokens_removed);
-        eprintln!("  Compression ratio: {:.1}%", (1.0 - result.compression_ratio) * 100.0);
-        eprintln!("  Target ratio:      {:.1}%", (1.0 - config.compression_ratio) * 100.0);
+        eprintln!(
+            "  Compression ratio: {:.1}%",
+            (1.0 - result.compression_ratio) * 100.0
+        );
+        eprintln!(
+            "  Target ratio:      {:.1}%",
+            (1.0 - config.compression_ratio) * 100.0
+        );
         eprintln!();
     }
-    
+
     // Write output based on format
     match config.output_format {
         OutputFormatType::Text => {
@@ -224,15 +235,17 @@ fn main() {
             #[cfg(feature = "image")]
             {
                 if let Some(image_data) = result.image_data {
-                    let output_path = config.output_file.as_ref()
+                    let output_path = config
+                        .output_file
+                        .as_ref()
                         .map(|p| p.to_owned())
                         .unwrap_or_else(|| PathBuf::from("compressed.png"));
-                    
+
                     if let Err(e) = fs::write(&output_path, image_data) {
                         eprintln!("Error writing PNG: {}", e);
                         process::exit(1);
                     }
-                    
+
                     if config.show_stats {
                         eprintln!("  Output saved to: {}", output_path.display());
                     }
@@ -246,19 +259,21 @@ fn main() {
             #[cfg(feature = "image")]
             {
                 use compression_prompt::ImageRenderer;
-                
+
                 let renderer = ImageRenderer::default();
                 match renderer.render_to_jpeg(&result.compressed, config.jpeg_quality) {
                     Ok(jpeg_data) => {
-                        let output_path = config.output_file.as_ref()
+                        let output_path = config
+                            .output_file
+                            .as_ref()
                             .map(|p| p.to_owned())
                             .unwrap_or_else(|| PathBuf::from("compressed.jpg"));
-                        
+
                         if let Err(e) = fs::write(&output_path, jpeg_data) {
                             eprintln!("Error writing JPEG: {}", e);
                             process::exit(1);
                         }
-                        
+
                         if config.show_stats {
                             eprintln!("  Output saved to: {}", output_path.display());
                         }
@@ -272,4 +287,3 @@ fn main() {
         }
     }
 }
-

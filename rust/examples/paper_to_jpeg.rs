@@ -1,4 +1,6 @@
-use compression_prompt::{ImageRenderer, ImageRendererConfig, StatisticalFilter, StatisticalFilterConfig};
+use compression_prompt::{
+    ImageRenderer, ImageRendererConfig, StatisticalFilter, StatisticalFilterConfig,
+};
 use std::fs;
 use std::path::Path;
 
@@ -7,12 +9,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Read original paper
     let paper_path = "../benchmarks/datasets/arxiv_markdown/1211.5063.md";
-    
+
     if !Path::new(paper_path).exists() {
         eprintln!("❌ Paper file not found: {}", paper_path);
         return Err("Paper file not found".into());
     }
-    
+
     let text = fs::read_to_string(paper_path)?;
 
     println!("📝 Original paper:");
@@ -46,7 +48,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let filter = StatisticalFilter::new(config);
         let compressed = filter.compress(&text);
-        
+
         let original_tokens = text.split_whitespace().count();
         let compressed_tokens = compressed.split_whitespace().count();
         let compression_ratio_actual = compressed_tokens as f32 / original_tokens as f32;
@@ -54,9 +56,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("✅ Compression complete:");
         println!("  Original tokens: {}", original_tokens);
         println!("  Compressed tokens: {}", compressed_tokens);
-        println!("  Compression ratio: {:.1}%", compression_ratio_actual * 100.0);
+        println!(
+            "  Compression ratio: {:.1}%",
+            compression_ratio_actual * 100.0
+        );
         println!("  Tokens saved: {}", original_tokens - compressed_tokens);
-        println!("  Token savings: {:.1}%", (1.0 - compression_ratio_actual) * 100.0);
+        println!(
+            "  Token savings: {:.1}%",
+            (1.0 - compression_ratio_actual) * 100.0
+        );
 
         // Save compressed text
         let text_filename = format!("rnn_paper_{}_compressed.txt", label);
@@ -70,8 +78,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         total_png_size += png_data.len();
 
         println!("  🖼️  PNG saved: {}", png_filename);
-        println!("     Size: {:.2} MB ({} bytes)", 
-            png_data.len() as f32 / 1_048_576.0, 
+        println!(
+            "     Size: {:.2} MB ({} bytes)",
+            png_data.len() as f32 / 1_048_576.0,
             png_data.len()
         );
 
@@ -84,12 +93,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let reduction = (1.0 - (jpeg_data.len() as f32 / png_data.len() as f32)) * 100.0;
 
         println!("  📷 JPEG saved: {}", jpeg_filename);
-        println!("     Size: {:.2} MB ({} bytes)", 
-            jpeg_data.len() as f32 / 1_048_576.0, 
+        println!(
+            "     Size: {:.2} MB ({} bytes)",
+            jpeg_data.len() as f32 / 1_048_576.0,
             jpeg_data.len()
         );
         println!("     Quality: {}", jpeg_quality);
-        println!("     vs PNG: -{:.1}% ({:.2} MB saved)", 
+        println!(
+            "     vs PNG: -{:.1}% ({:.2} MB saved)",
             reduction,
             (png_data.len() - jpeg_data.len()) as f32 / 1_048_576.0
         );
@@ -110,9 +121,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  Input: {}", paper_path);
     println!("  Paper: 'On the difficulty of training Recurrent Neural Networks'");
     println!();
-    println!("  Total PNG size: {:.2} MB", total_png_size as f32 / 1_048_576.0);
-    println!("  Total JPEG size: {:.2} MB", total_jpeg_size as f32 / 1_048_576.0);
-    println!("  Total saved: {:.2} MB ({:.1}% reduction)", 
+    println!(
+        "  Total PNG size: {:.2} MB",
+        total_png_size as f32 / 1_048_576.0
+    );
+    println!(
+        "  Total JPEG size: {:.2} MB",
+        total_jpeg_size as f32 / 1_048_576.0
+    );
+    println!(
+        "  Total saved: {:.2} MB ({:.1}% reduction)",
         (total_png_size - total_jpeg_size) as f32 / 1_048_576.0,
         (1.0 - (total_jpeg_size as f32 / total_png_size as f32)) * 100.0
     );
@@ -130,4 +148,3 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

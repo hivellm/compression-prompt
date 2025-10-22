@@ -7,12 +7,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Read original paper
     let paper_path = "../benchmarks/datasets/arxiv_markdown/1505.07818.md";
-    
+
     if !Path::new(paper_path).exists() {
         eprintln!("❌ Paper file not found: {}", paper_path);
         return Err("Paper file not found".into());
     }
-    
+
     let text = fs::read_to_string(paper_path)?;
 
     println!("📝 Original paper:");
@@ -46,9 +46,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("✅ Compression complete:");
         println!("  Original tokens: {}", result.original_tokens);
         println!("  Compressed tokens: {}", result.compressed_tokens);
-        println!("  Compression ratio: {:.1}%", result.compression_ratio * 100.0);
+        println!(
+            "  Compression ratio: {:.1}%",
+            result.compression_ratio * 100.0
+        );
         println!("  Tokens saved: {}", result.tokens_removed);
-        println!("  Token savings: {:.1}%", (1.0 - result.compression_ratio) * 100.0);
+        println!(
+            "  Token savings: {:.1}%",
+            (1.0 - result.compression_ratio) * 100.0
+        );
 
         // Save compressed text
         let text_filename = format!("rnn_paper_{}_compressed.txt", label);
@@ -59,11 +65,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if let Some(img_data) = &result.image_data {
             let img_filename = format!("rnn_paper_{}_compressed.png", label);
             fs::write(&img_filename, img_data)?;
-            
+
             println!("  🖼️  Image saved: {}", img_filename);
-            println!("     Size: {} KB ({} bytes)", img_data.len() / 1024, img_data.len());
+            println!(
+                "     Size: {} KB ({} bytes)",
+                img_data.len() / 1024,
+                img_data.len()
+            );
             println!("     Dimensions: 1024x1024 PNG");
-            
+
             // Verify PNG signature
             if img_data.len() >= 8 && &img_data[0..8] == &[137, 80, 78, 71, 13, 10, 26, 10] {
                 println!("     ✓ Valid PNG signature");
@@ -93,4 +103,3 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

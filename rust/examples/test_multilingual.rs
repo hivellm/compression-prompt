@@ -36,15 +36,18 @@ fn main() {
     for (lang, text) in tests {
         println!("Language: {}", lang);
         println!("Original: {}", text);
-        
+
         let compressed = filter.compress(text);
-        
+
         let original_words = text.split_whitespace().count();
         let compressed_words = compressed.split_whitespace().count();
         let ratio = compressed_words as f32 / original_words as f32;
-        
+
         println!("Compressed: {}", compressed);
-        println!("Ratio: {:.2} ({} -> {} words)\n", ratio, original_words, compressed_words);
+        println!(
+            "Ratio: {:.2} ({} -> {} words)\n",
+            ratio, original_words, compressed_words
+        );
     }
 
     println!("✅ Multilingual compression test completed!");
