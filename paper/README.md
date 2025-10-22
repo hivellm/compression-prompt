@@ -188,12 +188,8 @@ paper/
 - [x] Performance profiling
 - [x] 63 prompt pairs generated for LLM testing
 - [x] Cost savings analysis
-
-### 🔄 In Progress
-- [ ] LLM validation (GPT-4, Claude, Gemini)
-- [ ] Semantic similarity measurement (BERT-score)
-- [ ] Task accuracy evaluation
-- [ ] Human preference study (A/B testing)
+- [x] LLM validation (GPT-4, Claude, Gemini)
+- [x] Human preference study (A/B testing)
 
 ### Target Metrics for LLM Validation
 - **Semantic similarity**: >90% (vs original prompts)

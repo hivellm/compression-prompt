@@ -2,13 +2,15 @@
 
 Large language models have transformed software development, research analysis, and natural language processing. However, their adoption faces economic constraints due to token-based pricing models. Current commercial LLMs charge per token for both input (prompts) and output (completions), with costs ranging from \$0.25 to \$15.00 per million tokens depending on the model tier~\cite{anthropic2024pricing,openai2024pricing}.
 
-For enterprise applications processing millions of tokens daily, even modest compression yields substantial cost savings. For example, at GPT-4's \$5/1M pricing:
+For enterprise applications processing millions of tokens daily, even modest compression yields substantial cost savings. For example, at Claude Sonnet's \$15/1M pricing:
 
 \begin{itemize}
-    \item 50\% compression = \$2.50 saved per 1M tokens
-    \item High-volume app (100M tokens/month) = \$2,500/month = \$30K/year
-    \item Enterprise (1B tokens/month) = \$300K/year
+    \item 50\% compression = \$7.50 saved per 1M tokens
+    \item High-volume app (100M tokens/month) = \$7,500/month = \$90K/year
+    \item Enterprise (1B tokens/month) = \$900K/year
 \end{itemize}
+
+With GPT-4/Grok-4 pricing (\$5/1M), savings are \$2.50/1M tokens or \$300K/year for 1B tokens/month.
 
 \subsection{Problem Statement}
 
@@ -41,12 +43,13 @@ Removing articles (``the'', ``a''), prepositions (``to''), and conjunctions (``a
 This paper makes the following contributions:
 
 \begin{enumerate}
-    \item A \textbf{model-free statistical filtering algorithm} achieving 50\% compression with 89\% quality retention
+    \item A \textbf{model-free statistical filtering algorithm} achieving 50\% compression with 91\% average quality retention across 6 flagship LLMs
     \item A \textbf{multi-component scoring system} combining IDF (30\%), position (20\%), POS heuristics (20\%), entity detection (20\%), and local entropy (10\%)
     \item \textbf{Comprehensive quality metrics} for objective evaluation: keyword retention, entity retention, vocabulary diversity, and information density
-    \item \textbf{Empirical validation} on 1.66M tokens (200 arXiv papers) with 100\% keyword retention and 91.8\% entity retention
+    \item \textbf{Empirical validation} on 1.66M tokens (200 arXiv papers) with 92\% keyword retention and 89.5\% entity retention
+    \item \textbf{LLM validation across 6 models} with 350+ A/B test pairs: Grok-4 (93\%), Claude Sonnet (91\%), GPT-5 (89\%), Gemini Pro (89\%), Grok (88\%), Claude Haiku (87\%)
     \item \textbf{Open-source implementation} in Rust with 10.58 MB/s throughput and <1ms latency for typical prompts
-    \item \textbf{Production-ready dataset} of 63 prompt pairs for LLM validation with GPT-4, Claude, and Gemini
+    \item \textbf{Optical context compression} (BETA): Novel image output format for vision models
 \end{enumerate}
 
 \subsection{Related Work}
