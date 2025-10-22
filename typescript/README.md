@@ -100,15 +100,15 @@ const jpegResult = compressor.compressWithFormat(
 
 ```bash
 # Text compression
-npx compress input.txt
-npx compress -r 0.7 input.txt              # Conservative (70%)
-npx compress -s input.txt                  # Show statistics
-npx compress -o output.txt input.txt       # Save to file
+npx @hivellm/compression-prompt input.txt
+npx @hivellm/compression-prompt -r 0.7 input.txt              # Conservative (70%)
+npx @hivellm/compression-prompt -s input.txt                  # Show statistics
+npx @hivellm/compression-prompt -o output.txt input.txt       # Save to file
 
 # Image compression
-npx compress -f png -o output.png input.txt              # Generate PNG
-npx compress -f jpeg -o output.jpg input.txt             # Generate JPEG
-npx compress -f jpeg --jpeg-quality 95 -s input.txt      # High-quality JPEG
+npx @hivellm/compression-prompt -f png -o output.png input.txt              # Generate PNG
+npx @hivellm/compression-prompt -f jpeg -o output.jpg input.txt             # Generate JPEG
+npx @hivellm/compression-prompt -f jpeg --jpeg-quality 95 -s input.txt      # High-quality JPEG
 ```
 
 ## Features
