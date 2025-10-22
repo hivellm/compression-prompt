@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
-    {name = "HiveLLM Team", email = "dev@hivellm.com"}
+    {name = "HiveLLM Team", email = "team@hivellm.org"}
 ]
 keywords = ["llm", "compression", "prompt", "optimization", "token-reduction", "nlp", "ai"]
 classifiers = [

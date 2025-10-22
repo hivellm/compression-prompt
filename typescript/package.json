@@ -19,7 +19,7 @@
     "optimization",
     "token-reduction"
   ],
-  "author": "HiveLLM Team",
+  "author": "HiveLLM Team <team@hivellm.org>",
   "license": "MIT",
   "repository": {
     "type": "git",

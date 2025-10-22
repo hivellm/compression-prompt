@@ -293,4 +293,4 @@ Code: MIT License
 
 **Status**: Ready for arXiv submission (LLM validation complete: 6 models, 350+ test pairs, 90% avg quality)
 
-**Contact**: team@hivellm.dev
+**Contact**: team@hivellm.org
