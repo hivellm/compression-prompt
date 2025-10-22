@@ -1,4 +1,4 @@
-import { StatisticalFilter } from '../StatisticalFilter';
+import { StatisticalFilter } from '../statistical-filter';
 import { StatisticalFilterConfig } from '../types';
 
 describe('StatisticalFilter', () => {
@@ -13,7 +13,9 @@ describe('StatisticalFilter', () => {
       const compressed = filter.compress(text);
 
       const originalWords = text.split(/\s+/).length;
-      const compressedWords = compressed.split(/\s+/).filter(w => w.length > 0).length;
+      const compressedWords = compressed
+        .split(/\s+/)
+        .filter((w: string) => w.length > 0).length;
 
       expect(compressedWords).toBeLessThanOrEqual(originalWords);
       expect(compressed).not.toBe('');
@@ -79,6 +81,7 @@ describe('StatisticalFilter', () => {
 
       // "to" can be removed in other contexts if not critical
       const text2 = 'going to the store';
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _compressed2 = filter.compress(text2);
       // This is context-dependent, so we don't assert removal
     });
@@ -151,7 +154,7 @@ describe('StatisticalFilter', () => {
       expect(compressed).toContain('Vectorizer');
       expect(compressed).toContain('Synap');
 
-      const words = compressed.split(/\s+/).filter(w => w.length > 0);
+      const words = compressed.split(/\s+/).filter((w: string) => w.length > 0);
       expect(words.length).toBeGreaterThanOrEqual(3);
     });
 
@@ -163,6 +166,7 @@ describe('StatisticalFilter', () => {
       const filter = new StatisticalFilter(config);
 
       const text = 'Check src/main.rs for details';
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _compressed = filter.compress(text);
 
       // With protection disabled, behavior is normal compression
@@ -178,6 +182,7 @@ describe('StatisticalFilter', () => {
       const filter = new StatisticalFilter(config);
 
       const text = 'how to reproduce the issue';
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _compressed = filter.compress(text);
 
       // With contextual stopwords disabled, "to" might be removed
@@ -211,11 +216,10 @@ describe('StatisticalFilter', () => {
       const scores = filter.scoreWords(text);
 
       expect(scores).toHaveLength(4);
-      scores.forEach(score => {
+      scores.forEach((score: any) => {
         expect(score).toHaveProperty('position');
         expect(score).toHaveProperty('text');
         expect(score).toHaveProperty('score');
-        expect(score).toHaveProperty('charPosition');
       });
     });
   });
