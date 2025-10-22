@@ -66,7 +66,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("  Saved: output_compressed.png");
 
         // Verify PNG signature
-        if img_data.len() >= 8 && &img_data[0..8] == &[137, 80, 78, 71, 13, 10, 26, 10] {
+        if img_data.len() >= 8 && img_data[0..8] == [137, 80, 78, 71, 13, 10, 26, 10] {
             println!("  ✓ Valid PNG signature");
         }
     }

@@ -294,7 +294,7 @@ impl StatisticalFilter {
                     return true;
                 }
                 // Check if next word is technical (starts with uppercase or contains _)
-                if next.chars().next().map_or(false, |c| c.is_uppercase()) || next.contains('_') {
+                if next.chars().next().is_some_and(|c| c.is_uppercase()) || next.contains('_') {
                     return true;
                 }
             }
@@ -304,7 +304,7 @@ impl StatisticalFilter {
         if ["is", "are", "was", "were", "be"].contains(&word_lower.as_str()) {
             if let Some(&prev) = context_before.last() {
                 // If previous word is capitalized or technical, keep the verb
-                if prev.chars().next().map_or(false, |c| c.is_uppercase())
+                if prev.chars().next().is_some_and(|c| c.is_uppercase())
                     || prev.len() > 6
                     || prev.contains('_')
                 {
@@ -315,11 +315,11 @@ impl StatisticalFilter {
 
         // "and/or" between important terms
         if ["and", "or"].contains(&word_lower.as_str()) {
-            let prev_important = context_before.last().map_or(false, |&prev| {
-                prev.chars().next().map_or(false, |c| c.is_uppercase()) || prev.len() > 6
+            let prev_important = context_before.last().is_some_and(|&prev| {
+                prev.chars().next().is_some_and(|c| c.is_uppercase()) || prev.len() > 6
             });
-            let next_important = context_after.first().map_or(false, |&next| {
-                next.chars().next().map_or(false, |c| c.is_uppercase()) || next.len() > 6
+            let next_important = context_after.first().is_some_and(|&next| {
+                next.chars().next().is_some_and(|c| c.is_uppercase()) || next.len() > 6
             });
             if prev_important && next_important {
                 return true;

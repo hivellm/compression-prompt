@@ -208,7 +208,7 @@ mod tests {
         let compressor = Compressor::default();
         let input = "short text";
 
-        let result = compressor.compress(&input);
+        let result = compressor.compress(input);
         assert!(matches!(result, Err(CompressionError::InputTooShort(_, _))));
     }
 
@@ -241,7 +241,7 @@ mod tests {
         let input = "some short text with few tokens";
 
         // Should fail due to min_input_tokens
-        let result = compressor.compress(&input);
+        let result = compressor.compress(input);
         assert!(matches!(result, Err(CompressionError::InputTooShort(_, _))));
     }
 }

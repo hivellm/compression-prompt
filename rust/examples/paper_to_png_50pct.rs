@@ -73,7 +73,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("  Dimensions: 1024x1024");
             println!("  Font size: 12.5pt");
 
-            if png_data.len() >= 8 && &png_data[0..8] == &[137, 80, 78, 71, 13, 10, 26, 10] {
+            if png_data.len() >= 8 && png_data[0..8] == [137, 80, 78, 71, 13, 10, 26, 10] {
                 println!("  ✓ Valid PNG signature");
             }
 
