@@ -5,7 +5,6 @@
 
 use compression_prompt::compressor::{Compressor, CompressorConfig};
 use compression_prompt::statistical_filter::{StatisticalFilter, StatisticalFilterConfig};
-use compression_prompt::tokenizer::{MockTokenizer, Tokenizer};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
@@ -40,7 +39,6 @@ struct ABTestSuite {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("🔬 Generating A/B Test Suite for LLM Evaluation\n");
 
-    let tokenizer = MockTokenizer;
     let mut test_suite = ABTestSuite {
         version: "1.0.0".to_string(),
         created_at: chrono::Utc::now().to_rfc3339(),
@@ -77,7 +75,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 test_dictionary_compression(
                     &mut test_suite,
                     paper,
-                    &tokenizer,
                     &format!("{}_paper_{}", name, idx + 1),
                 )?;
 
@@ -85,7 +82,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 test_statistical_filtering(
                     &mut test_suite,
                     paper,
-                    &tokenizer,
                     &format!("{}_paper_{}", name, idx + 1),
                     0.5,
                 )?;
@@ -94,7 +90,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 test_statistical_filtering(
                     &mut test_suite,
                     paper,
-                    &tokenizer,
                     &format!("{}_paper_{}", name, idx + 1),
                     0.7,
                 )?;
@@ -103,7 +98,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 test_hybrid_compression(
                     &mut test_suite,
                     paper,
-                    &tokenizer,
                     &format!("{}_paper_{}", name, idx + 1),
                 )?;
             }
@@ -133,14 +127,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn test_dictionary_compression(
     suite: &mut ABTestSuite,
     text: &str,
-    tokenizer: &MockTokenizer,
     paper_id: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let config = CompressorConfig::default();
     let compressor = Compressor::new(config);
 
     let start = std::time::Instant::now();
-    match compressor.compress(text, tokenizer) {
+    match compressor.compress(text) {
         Ok(result) => {
             let duration = start.elapsed();
 
@@ -154,8 +147,8 @@ fn test_dictionary_compression(
                 compression_ratio: result.compression_ratio as f64,
                 metadata: TestMetadata {
                     paper_id: Some(paper_id.to_string()),
-                    dictionary_entries: Some(result.dictionary.entries.len()),
-                    substitutions: Some(result.substitutions),
+                    dictionary_entries: None,
+                    substitutions: None,
                     processing_time_ms: duration.as_secs_f64() * 1000.0,
                 },
             });
@@ -171,7 +164,6 @@ fn test_dictionary_compression(
 fn test_statistical_filtering(
     suite: &mut ABTestSuite,
     text: &str,
-    tokenizer: &MockTokenizer,
     paper_id: &str,
     ratio: f32,
 ) -> Result<(), Box<dyn std::error::Error>> {
@@ -182,11 +174,11 @@ fn test_statistical_filtering(
     let filter = StatisticalFilter::new(config);
 
     let start = std::time::Instant::now();
-    let compressed = filter.compress(text, tokenizer);
+    let compressed = filter.compress(text);
     let duration = start.elapsed();
 
-    let original_tokens = tokenizer.count_tokens(text);
-    let compressed_tokens = tokenizer.count_tokens(&compressed);
+    let original_tokens = text.split_whitespace().count();
+    let compressed_tokens = compressed.split_whitespace().count();
     let actual_ratio = compressed_tokens as f64 / original_tokens as f64;
 
     suite.tests.push(ABTest {
@@ -211,14 +203,13 @@ fn test_statistical_filtering(
 fn test_hybrid_compression(
     suite: &mut ABTestSuite,
     text: &str,
-    tokenizer: &MockTokenizer,
     paper_id: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let dict_config = CompressorConfig::default();
     let dict_compressor = Compressor::new(dict_config);
 
     let start = std::time::Instant::now();
-    match dict_compressor.compress(text, tokenizer) {
+    match dict_compressor.compress(text) {
         Ok(dict_result) => {
             // Apply statistical filtering to dictionary result
             let stat_config = StatisticalFilterConfig {
@@ -226,11 +217,11 @@ fn test_hybrid_compression(
                 ..Default::default()
             };
             let stat_filter = StatisticalFilter::new(stat_config);
-            let final_compressed = stat_filter.compress(&dict_result.compressed, tokenizer);
+            let final_compressed = stat_filter.compress(&dict_result.compressed);
             let duration = start.elapsed();
 
-            let original_tokens = tokenizer.count_tokens(text);
-            let compressed_tokens = tokenizer.count_tokens(&final_compressed);
+            let original_tokens = text.split_whitespace().count();
+            let compressed_tokens = final_compressed.split_whitespace().count();
             let compression_ratio = compressed_tokens as f64 / original_tokens as f64;
 
             suite.tests.push(ABTest {
@@ -243,8 +234,8 @@ fn test_hybrid_compression(
                 compression_ratio,
                 metadata: TestMetadata {
                     paper_id: Some(paper_id.to_string()),
-                    dictionary_entries: Some(dict_result.dictionary.entries.len()),
-                    substitutions: Some(dict_result.substitutions),
+                    dictionary_entries: None,
+                    substitutions: None,
                     processing_time_ms: duration.as_secs_f64() * 1000.0,
                 },
             });

@@ -5,7 +5,6 @@
 
 use compression_prompt::compressor::{Compressor, CompressorConfig};
 use compression_prompt::statistical_filter::{StatisticalFilter, StatisticalFilterConfig};
-use compression_prompt::tokenizer::{MockTokenizer, Tokenizer};
 use criterion::{BenchmarkId, Criterion, Throughput, black_box, criterion_group, criterion_main};
 use std::fs;
 
@@ -66,7 +65,6 @@ fn generate_synthetic_paper() -> String {
 /// Benchmark dictionary compression
 fn bench_dictionary_compression(c: &mut Criterion) {
     let mut group = c.benchmark_group("dictionary_compression");
-    let tokenizer = MockTokenizer;
     let config = CompressorConfig::default();
     let compressor = Compressor::new(config);
 
@@ -76,7 +74,7 @@ fn bench_dictionary_compression(c: &mut Criterion) {
 
         group.bench_with_input(BenchmarkId::new("dict", &name), &dataset, |b, data| {
             b.iter(|| {
-                let _ = compressor.compress(black_box(data), &tokenizer);
+                let _ = compressor.compress(black_box(data));
             });
         });
     }
@@ -87,7 +85,6 @@ fn bench_dictionary_compression(c: &mut Criterion) {
 /// Benchmark statistical filtering
 fn bench_statistical_filtering(c: &mut Criterion) {
     let mut group = c.benchmark_group("statistical_filtering");
-    let tokenizer = MockTokenizer;
 
     let ratios = vec![0.3, 0.5, 0.7];
 
@@ -107,7 +104,7 @@ fn bench_statistical_filtering(c: &mut Criterion) {
                 &dataset,
                 |b, data| {
                     b.iter(|| {
-                        let _ = filter.compress(black_box(data), &tokenizer);
+                        let _ = filter.compress(black_box(data));
                     });
                 },
             );
@@ -120,7 +117,6 @@ fn bench_statistical_filtering(c: &mut Criterion) {
 /// Benchmark hybrid compression (dictionary + statistical)
 fn bench_hybrid_compression(c: &mut Criterion) {
     let mut group = c.benchmark_group("hybrid_compression");
-    let tokenizer = MockTokenizer;
 
     let dict_config = CompressorConfig::default();
     let dict_compressor = Compressor::new(dict_config);
@@ -138,9 +134,9 @@ fn bench_hybrid_compression(c: &mut Criterion) {
         group.bench_with_input(BenchmarkId::new("hybrid", &name), &dataset, |b, data| {
             b.iter(|| {
                 // First apply dictionary compression
-                if let Ok(dict_result) = dict_compressor.compress(black_box(data), &tokenizer) {
+                if let Ok(dict_result) = dict_compressor.compress(black_box(data)) {
                     // Then apply statistical filtering
-                    let _ = stat_filter.compress(&dict_result.compressed, &tokenizer);
+                    let _ = stat_filter.compress(&dict_result.compressed);
                 }
             });
         });
@@ -152,16 +148,15 @@ fn bench_hybrid_compression(c: &mut Criterion) {
 /// Compare compression ratios achieved by different methods
 fn bench_compression_ratios(c: &mut Criterion) {
     let group = c.benchmark_group("compression_ratios");
-    let tokenizer = MockTokenizer;
 
     for (name, dataset) in load_datasets() {
-        let original_tokens = tokenizer.count_tokens(&dataset);
+        let original_tokens = dataset.split_whitespace().count();
 
         // Dictionary compression
         let dict_config = CompressorConfig::default();
         let dict_compressor = Compressor::new(dict_config);
 
-        if let Ok(result) = dict_compressor.compress(&dataset, &tokenizer) {
+        if let Ok(result) = dict_compressor.compress(&dataset) {
             let ratio = result.compression_ratio;
             println!(
                 "Dataset '{}' - Dictionary: {:.3} compression ratio ({:.1}% savings)",
@@ -178,8 +173,8 @@ fn bench_compression_ratios(c: &mut Criterion) {
                 ..Default::default()
             };
             let stat_filter = StatisticalFilter::new(stat_config);
-            let compressed = stat_filter.compress(&dataset, &tokenizer);
-            let compressed_tokens = tokenizer.count_tokens(&compressed);
+            let compressed = stat_filter.compress(&dataset);
+            let compressed_tokens = compressed.split_whitespace().count();
             let actual_ratio = compressed_tokens as f64 / original_tokens as f64;
 
             println!(
