@@ -209,6 +209,44 @@ export class StatisticalFilter {
     return kept.join(' ');
   }
 
+  /**
+   * Compress text and return detailed metrics
+   * 
+   * @param text - Input text to compress
+   * @returns Compression result with metrics
+   */
+  compressWithMetrics(text: string): {
+    compressed: string;
+    originalTokens: number;
+    compressedTokens: number;
+    compressionRatio: number;
+    tokensRemoved: number;
+  } {
+    // Perform statistical compression
+    const compressed = this.compress(text);
+
+    // Calculate token counts (rough estimation: words)
+    const originalTokens = text.split(/\s+/).filter(w => w.length > 0).length;
+    const compressedTokens = compressed.split(/\s+/).filter(w => w.length > 0).length;
+    const compressionRatio = originalTokens > 0 ? compressedTokens / originalTokens : 1.0;
+    const tokensRemoved = originalTokens - compressedTokens;
+
+    return {
+      compressed,
+      originalTokens,
+      compressedTokens,
+      compressionRatio,
+      tokensRemoved,
+    };
+  }
+
+  /**
+   * Calculate importance scores for all tokens
+   * Score words in text by importance
+   * 
+   * @param text - Input text to score
+   * @returns Array of word importance scores
+   */
   scoreWords(text: string): WordImportance[] {
     const words = text.split(/\s+/);
 
