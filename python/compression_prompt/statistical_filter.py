@@ -75,7 +75,7 @@ class StatisticalFilterConfig:
 class StatisticalFilter:
     """Statistical token filter (model-free alternative to LLMLingua)."""
     
-    # Multilingual stopwords
+    # Multilingual stopwords (10+ languages)
     STOP_WORDS = frozenset([
         # English
         "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with",
@@ -83,19 +83,57 @@ class StatisticalFilter:
         "had", "do", "does", "did", "will", "would", "should", "could", "may", "might", "must",
         "can", "shall", "this", "that", "these", "those", "i", "you", "he", "she", "it", "we",
         "they", "what", "which", "who", "when", "where", "why", "how",
-        # Spanish
+        # Spanish (Español)
         "el", "la", "los", "las", "un", "una", "unos", "unas", "y", "o", "pero", "en", "de",
-        "del", "al", "para", "por", "con", "sin", "sobre", "entre", "hasta", "desde",
-        # Portuguese
+        "del", "al", "para", "por", "con", "sin", "sobre", "entre", "hasta", "desde", "es",
+        "son", "está", "están", "ser", "estar", "haber", "hacer", "tener", "decir", "ir",
+        "ver", "dar", "saber", "querer", "poder", "poner", "este", "ese", "aquel", "mi",
+        "tu", "su", "nuestro", "vuestro", "que", "quien", "cual", "cuando", "donde", "como",
+        # Portuguese (Português)
         "o", "a", "os", "as", "um", "uma", "uns", "umas", "e", "ou", "mas", "em", "de",
-        "do", "da", "dos", "das", "no", "na", "nos", "nas", "ao", "à", "aos", "às",
-        # French
+        "do", "da", "dos", "das", "no", "na", "nos", "nas", "ao", "à", "aos", "às", "para",
+        "por", "com", "sem", "sobre", "entre", "até", "desde", "é", "são", "está", "estão",
+        "ser", "estar", "haver", "ter", "fazer", "dizer", "ir", "ver", "dar", "saber",
+        "querer", "poder", "pôr", "este", "esse", "aquele", "meu", "teu", "seu", "nosso",
+        "vosso", "que", "quem", "qual", "quando", "onde", "como",
+        # French (Français)
         "le", "la", "les", "un", "une", "des", "et", "ou", "mais", "dans", "en", "de",
-        "du", "au", "aux", "pour", "par", "avec", "sans", "sur", "sous",
-        # German
+        "du", "au", "aux", "pour", "par", "avec", "sans", "sur", "sous", "entre", "vers",
+        "chez", "est", "sont", "être", "avoir", "faire", "dire", "aller", "voir", "savoir",
+        "pouvoir", "vouloir", "venir", "devoir", "prendre", "ce", "cet", "cette", "ces",
+        "mon", "ton", "son", "notre", "votre", "leur", "que", "qui", "quoi", "dont", "où",
+        "quand", "comment",
+        # German (Deutsch)
         "der", "die", "das", "den", "dem", "des", "ein", "eine", "einer", "eines", "einem",
         "einen", "und", "oder", "aber", "in", "im", "an", "auf", "für", "von", "zu", "mit",
-        # Add more languages as needed
+        "bei", "nach", "über", "unter", "ist", "sind", "war", "waren", "sein", "haben",
+        "werden", "können", "müssen", "sollen", "wollen", "dieser", "jener", "mein", "dein",
+        "sein", "unser", "euer", "ihr", "was", "wer", "wo", "wann", "wie", "warum",
+        # Italian (Italiano)
+        "il", "lo", "l", "i", "gli", "la", "le", "un", "uno", "una", "e", "o", "ma", "in",
+        "di", "del", "dello", "della", "dei", "degli", "delle", "al", "allo", "alla", "ai",
+        "agli", "alle", "per", "da", "dal", "dallo", "dalla", "dai", "dagli", "dalle", "con",
+        "su", "sul", "sullo", "sulla", "sui", "sugli", "sulle", "è", "sono", "essere", "avere",
+        "fare", "dire", "andare", "vedere", "sapere", "potere", "volere", "questo", "quello",
+        "mio", "tuo", "suo", "nostro", "vostro", "loro", "che", "chi", "quale", "quando",
+        "dove", "come", "perché",
+        # Russian (Русский) - romanized
+        "i", "v", "ne", "na", "ya", "on", "s", "eto", "kak", "po", "no", "oni", "vse",
+        "tak", "ego", "za", "byl", "bylo", "tem", "chto", "eto", "esli", "mogu", "mozhet", "by",
+        # Chinese (中文) - common particles
+        "的", "了", "和", "是", "在", "我", "有", "他", "这", "中", "大", "来", "上",
+        "国", "个", "到", "说", "们", "为", "子", "中", "你", "地", "出", "道", "也",
+        "时", "年",
+        # Japanese (日本語) - particles and common words
+        "は", "が", "を", "に", "で", "と", "の", "も", "や", "から", "まで", "より",
+        "か", "な", "ね", "よ", "わ", "さ", "だ", "です", "ます", "ある", "いる", "する",
+        "なる", "これ", "それ", "あれ", "この", "その", "あの", "ここ", "そこ", "あそこ",
+        # Arabic (العربية) - romanized common words
+        "al", "wa", "fi", "min", "ila", "an", "ma", "la", "li", "bi", "qad", "lam",
+        "kan", "fi", "ala", "hatha", "dhalika", "huwa", "hiya", "hum",
+        # Hindi (हिन्दी) - romanized common words
+        "ka", "ki", "ke", "se", "ne", "ko", "me", "par", "hai", "tha", "the", "thi",
+        "aur", "ya", "to", "is", "wo", "ye", "kya", "kaise", "kab", "kahan", "kyun",
     ])
     
     NEGATIONS = frozenset([
