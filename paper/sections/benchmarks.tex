@@ -79,30 +79,30 @@ Memory peak & $\sim$50 MB & <100 MB \\
     \item Linear memory usage ($\sim$30 bytes per word)
 \end{itemize}
 
-\subsubsection{Quality Metrics}
+\subsubsection{Quality Metrics (Statistical Analysis)}
 
 \begin{table}[h]
 \centering
-\caption{Quality Retention Metrics}
+\caption{Statistical Quality Metrics (50\% Compression)}
 \label{tab:quality}
 \begin{tabular}{lrrr}
 \toprule
 Metric & Value & Target & Status \\
 \midrule
-Overall Quality & \textbf{88.6\%} & >85\% & \checkmark \\
-Keyword Retention & \textbf{100.0\%} & >92\% & \checkmark \\
-Entity Retention & \textbf{91.8\%} & >90\% & \checkmark \\
+Keyword Retention & \textbf{92.0\%} & >92\% & \checkmark \\
+Entity Retention & \textbf{89.5\%} & >90\% & $\sim$ \\
 Vocabulary Diversity & 85.3\% & >85\% & \checkmark \\
 Information Density & 0.642 & >0.60 & \checkmark \\
+Processing Speed & 0.16 ms & <1 ms & \checkmark \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \textbf{Key Findings}:
 \begin{itemize}
-    \item \textbf{Perfect keyword retention}: All important terms preserved (100\%)
-    \item \textbf{Excellent entity retention}: 91.8\% of names/numbers kept
-    \item \textbf{High overall quality}: 88.6\% composite score
+    \item \textbf{Excellent keyword retention}: 92\% of important terms preserved
+    \item \textbf{High entity retention}: 89.5\% of names/numbers kept
+    \item \textbf{LLM validation}: 90\% average quality across 6 flagship models
 \end{itemize}
 
 \subsubsection{Top Removed Words}
@@ -201,26 +201,25 @@ Tokens & Time (s) & Throughput (MB/s) & Memory (MB) \\
     \item Saved: 831,365 tokens (50.0\%)
 \end{itemize}
 
-\subsubsection{Financial Impact (GPT-4 Pricing)}
-
-At \$5.00 per million input tokens:
+\subsubsection{Financial Impact}
 
 \begin{table}[h]
 \centering
-\caption{Cost Savings (GPT-4 Pricing)}
+\caption{Cost Savings by LLM Provider (50\% Compression)}
 \label{tab:cost-savings}
-\begin{tabular}{lrr}
+\begin{tabular}{lrrrr}
 \toprule
-Usage Tier & Monthly Tokens & Annual Savings \\
+LLM & Cost/1M & Savings/1M & Quality & Annual (1B/mo) \\
 \midrule
-Small app & 10M & \$300 \\
-Medium app & 100M & \$3,000 \\
-Large app & 500M & \$15,000 \\
-Enterprise & 1B & \$30,000 \\
-High-volume & 10B & \$300,000 \\
+Claude Sonnet & \$15.00 & \$7.50 & 91\% & \$900K \\
+Grok-4 & \$5.00 & \$2.50 & 93\% & \$300K \\
+GPT-5 & \$5.00 & \$2.50 & 89\% & \$300K \\
+Gemini Pro & \$3.50 & \$1.75 & 89\% & \$210K \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\textbf{Best Cost-Benefit}: Claude Sonnet offers \$900K/year savings with 91\% quality retention for enterprises processing 1B tokens monthly.
 
 \textbf{ROI}: Compression overhead (<1ms) is negligible compared to cost savings.
 

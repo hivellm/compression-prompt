@@ -5,16 +5,17 @@
 We presented a model-free statistical filtering approach for LLM prompt compression that achieves:
 
 \begin{enumerate}
-    \item \textbf{50\% token reduction} with 91\% quality retention (validated on 6 flagship LLMs)
-    \item \textbf{350+ A/B test pairs} validated across Grok-4, Claude Sonnet, GPT-5, Gemini Pro
+    \item \textbf{50\% token reduction} with 90\% average quality retention across 6 flagship LLMs
+    \item \textbf{Best quality}: Grok-4 (93\%), Claude Sonnet (91\%)
+    \item \textbf{350+ A/B test pairs} validated: Grok-4, Claude Sonnet, GPT-5, Gemini Pro, Grok, Claude Haiku
     \item \textbf{92\% keyword preservation} and 89.5\% entity retention
-    \item \textbf{<1ms latency} and 10.58 MB/s throughput (production-ready)
+    \item \textbf{0.16ms latency} and 10.58 MB/s throughput (production-ready)
     \item \textbf{No external dependencies}: Pure statistical heuristics (IDF, position, POS, entities, entropy)
     \item \textbf{\$7.50 saved per million tokens} (Claude Sonnet pricing), scaling to \$900K/year for enterprises
     \item \textbf{Optical context compression}: Novel image output format for vision models (BETA)
 \end{enumerate}
 
-Our approach demonstrates that \textit{simple statistical methods can rival model-based compression} (LLMLingua) while being 100-1000× faster and requiring no external models. Real-world validation with flagship LLMs confirms 91\% average quality retention with 50\% cost savings.
+Our approach demonstrates that \textit{simple statistical methods can rival model-based compression} (LLMLingua) while being 100-1000× faster and requiring no external models. Real-world validation with 6 flagship LLMs confirms consistent quality retention (87-93\% range) with 50\% cost savings.
 
 \subsection{Key Insights}
 
@@ -35,8 +36,9 @@ Words at the start and end of text have higher importance (primacy/recency effec
 Contrary to assumptions that model-based compression (LLMLingua, Selective Context) is necessary for high-quality results, we show that:
 \begin{itemize}
     \item \textbf{Statistical heuristics} achieve comparable compression (50\% vs 50-70\%)
-    \item \textbf{Quality is competitive} (89\% vs 85-95\%)
-    \item \textbf{Speed is orders of magnitude faster} (<1ms vs 1-5s)
+    \item \textbf{Quality is competitive} (90\% average vs 85-95\%)
+    \item \textbf{Best LLM performance}: Grok-4 (93\%), Claude Sonnet (91\%)
+    \item \textbf{Speed is orders of magnitude faster} (0.16ms vs 1-5s)
     \item \textbf{Deployment is trivial} (no model download, offline-capable)
 \end{itemize}
 
@@ -135,6 +137,20 @@ Current implementation is English-only. Future:
     \item \textbf{Unicode handling}: Already supported in Rust
     \item \textbf{Script detection}: Auto-detect language, select appropriate config
 \end{itemize}
+
+\subsubsection{Optical Context Compression (Vision Models)}
+
+Inspired by DeepSeek-OCR's optical context compression, we developed an experimental feature to render compressed text as 1024×1024 images for vision model consumption:
+
+\begin{itemize}
+    \item \textbf{Format support}: PNG (lossless) and JPEG (66\% smaller at quality 85)
+    \item \textbf{Rendering}: Monospace text with 12.5pt font for optimal OCR
+    \item \textbf{Auto-pagination}: Splits long text across multiple images
+    \item \textbf{Performance}: <50ms rendering time per image
+    \item \textbf{Use case}: Dense document compression for vision-capable LLMs
+\end{itemize}
+
+\textbf{Status}: BETA - Works well, pending extensive validation with GPT-4V, Claude 3, Gemini Vision.
 
 \subsubsection{Streaming Compression}
 
