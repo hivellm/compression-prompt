@@ -131,9 +131,13 @@ class Compressor:
         # Step 5: Generate image if requested
         image_data = None
         if format == OutputFormat.IMAGE:
-            # Image feature not implemented yet in Python version
-            # Would require PIL/Pillow integration
-            pass
+            try:
+                from .image_renderer import ImageRenderer
+                renderer = ImageRenderer()
+                image_data = renderer.render_to_png(compressed)
+            except ImportError:
+                # Pillow not installed, skip image generation
+                pass
         
         return CompressionResult(
             compressed=compressed,

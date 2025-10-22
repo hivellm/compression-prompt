@@ -9,15 +9,32 @@ from .compressor import Compressor, CompressorConfig, CompressionResult, OutputF
 from .statistical_filter import StatisticalFilter, StatisticalFilterConfig, WordImportance
 from .quality_metrics import QualityMetrics
 
+# Image rendering (optional - requires Pillow)
+try:
+    from .image_renderer import ImageRenderer, ImageRendererConfig
+    __all__ = [
+        "Compressor",
+        "CompressorConfig",
+        "CompressionResult",
+        "OutputFormat",
+        "StatisticalFilter",
+        "StatisticalFilterConfig",
+        "WordImportance",
+        "QualityMetrics",
+        "ImageRenderer",
+        "ImageRendererConfig",
+    ]
+except ImportError:
+    __all__ = [
+        "Compressor",
+        "CompressorConfig",
+        "CompressionResult",
+        "OutputFormat",
+        "StatisticalFilter",
+        "StatisticalFilterConfig",
+        "WordImportance",
+        "QualityMetrics",
+    ]
+
 __version__ = "0.1.0"
-__all__ = [
-    "Compressor",
-    "CompressorConfig",
-    "CompressionResult",
-    "OutputFormat",
-    "StatisticalFilter",
-    "StatisticalFilterConfig",
-    "WordImportance",
-    "QualityMetrics",
-]
 
