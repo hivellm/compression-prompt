@@ -28,7 +28,8 @@
     "compress": "./dist/bin/compress.js"
   },
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.53"
+    "@napi-rs/canvas": "^0.1.53",
+    "commander": "^11.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

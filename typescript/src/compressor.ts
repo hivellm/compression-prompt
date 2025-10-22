@@ -3,6 +3,7 @@
  */
 
 import { StatisticalFilter, StatisticalFilterConfig } from './statistical-filter';
+import { ImageRenderer, ImageRendererConfig } from './image-renderer';
 
 export enum OutputFormat {
   TEXT = 'text',
@@ -110,10 +111,17 @@ export class Compressor {
 
     const tokensRemoved = Math.max(0, originalTokens - compressedTokens);
 
-    // Step 5: Generate image if requested (not implemented yet)
+    // Step 5: Generate image if requested
     let imageData: Buffer | undefined;
     if (format === OutputFormat.IMAGE) {
-      // Image feature not implemented yet in TypeScript version
+      try {
+        const renderer = new ImageRenderer();
+        imageData = renderer.renderToPng(compressed);
+      } catch (error) {
+        throw new CompressionError(
+          `Failed to render image: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
     }
 
     return {

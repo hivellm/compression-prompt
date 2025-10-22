@@ -8,5 +8,13 @@
 export { Compressor, CompressorConfig, CompressionResult, OutputFormat } from './compressor';
 export { StatisticalFilter, StatisticalFilterConfig, WordImportance } from './statistical-filter';
 export { QualityMetrics } from './quality-metrics';
+export { 
+  ImageRenderer, 
+  ImageRendererConfig, 
+  ImageFormat,
+  ImageError,
+  TextTooLargeError,
+  DEFAULT_IMAGE_RENDERER_CONFIG
+} from './image-renderer';
 
 export const VERSION = '0.1.0';

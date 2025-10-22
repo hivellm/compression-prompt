@@ -3,8 +3,8 @@
 import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
-import { StatisticalFilter } from './StatisticalFilter';
-import { QualityMetrics } from './QualityMetrics';
+import { StatisticalFilter } from './statistical-filter';
+import { QualityMetricsCalculator } from './quality-metrics';
 
 const program = new Command();
 
@@ -17,7 +17,7 @@ program
   .option('-r, --ratio <ratio>', 'Compression ratio (0.0-1.0, default: 0.5)', parseFloat, 0.5)
   .option('-s, --stats', 'Show compression statistics')
   .option('--quality', 'Show quality metrics')
-  .action(async (input: string | undefined, options) => {
+  .action(async (input: string | undefined, options: any) => {
     try {
       // Read input
       let text: string;
@@ -44,7 +44,7 @@ program
       // Calculate quality metrics if requested
       let quality;
       if (options.quality) {
-        quality = QualityMetrics.calculate(text, result.compressed);
+        quality = QualityMetricsCalculator.calculate(text, result.compressed);
       }
 
       // Show stats if requested
