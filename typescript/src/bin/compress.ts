@@ -13,23 +13,29 @@ interface CliArgs {
   ratio: number;
   stats: boolean;
   help: boolean;
+  format: 'text' | 'png' | 'jpeg';
+  jpegQuality: number;
 }
 
 function printUsage(): void {
   console.log(`Usage: compress [OPTIONS] [INPUT_FILE]
 
 Options:
-  -r, --ratio <RATIO>      Compression ratio (0.0-1.0, default: 0.5)
-  -o, --output <FILE>      Output file (default: stdout)
-  -s, --stats              Show compression statistics
-  -h, --help               Show this help message
+  -r, --ratio <RATIO>        Compression ratio (0.0-1.0, default: 0.5)
+  -o, --output <FILE>        Output file (default: stdout for text, compressed.png for image)
+  -f, --format <FORMAT>      Output format: text, png, jpeg (default: text)
+  --jpeg-quality <QUALITY>   JPEG quality (1-100, default: 85)
+  -s, --stats                Show compression statistics
+  -h, --help                 Show this help message
 
 Examples:
-  compress input.txt                        # Compress to stdout
-  compress -r 0.7 input.txt                 # Conservative (70%)
-  compress -r 0.3 input.txt                 # Aggressive (30%)
-  cat input.txt | compress                  # Read from stdin
-  compress -s input.txt                     # Show statistics
+  compress input.txt                          # Compress to stdout
+  compress -r 0.7 input.txt                   # Conservative (70%)
+  compress -r 0.3 input.txt                   # Aggressive (30%)
+  compress -f png -o out.png input.txt        # Generate PNG image
+  compress -f jpeg --jpeg-quality 90 in.txt   # Generate high-quality JPEG
+  cat input.txt | compress                    # Read from stdin
+  compress -s input.txt                       # Show statistics
 `);
 }
 
@@ -38,6 +44,8 @@ function parseArgs(argv: string[]): CliArgs {
     ratio: 0.5,
     stats: false,
     help: false,
+    format: 'text',
+    jpegQuality: 85,
   };
 
   for (let i = 2; i < argv.length; i++) {
@@ -75,6 +83,30 @@ function parseArgs(argv: string[]): CliArgs {
         args.stats = true;
         break;
 
+      case '-f':
+      case '--format':
+        i++;
+        if (i >= argv.length) {
+          throw new Error('Missing value for --format');
+        }
+        const format = argv[i].toLowerCase();
+        if (!['text', 'png', 'jpeg', 'jpg'].includes(format)) {
+          throw new Error(`Invalid format '${format}'. Use: text, png, or jpeg`);
+        }
+        args.format = (format === 'jpg' ? 'jpeg' : format) as 'text' | 'png' | 'jpeg';
+        break;
+
+      case '--jpeg-quality':
+        i++;
+        if (i >= argv.length) {
+          throw new Error('Missing value for --jpeg-quality');
+        }
+        args.jpegQuality = parseInt(argv[i]);
+        if (isNaN(args.jpegQuality) || args.jpegQuality < 1 || args.jpegQuality > 100) {
+          throw new Error('JPEG quality must be between 1 and 100');
+        }
+        break;
+
       default:
         if (arg.startsWith('-')) {
           throw new Error(`Unknown option: ${arg}`);
@@ -100,11 +132,50 @@ async function readInput(args: CliArgs): Promise<string> {
   }
 }
 
-function writeOutput(args: CliArgs, text: string): void {
-  if (args.outputFile) {
-    fs.writeFileSync(args.outputFile, text, 'utf8');
+function writeOutput(args: CliArgs, result: any): void {
+  if (args.format === 'text') {
+    // Text output
+    if (args.outputFile) {
+      fs.writeFileSync(args.outputFile, result.compressed, 'utf8');
+      if (args.stats) {
+        console.error(`Text saved to: ${args.outputFile}`);
+      }
+    } else {
+      process.stdout.write(result.compressed);
+    }
   } else {
-    process.stdout.write(text);
+    // Image output
+    if (!result.imageData) {
+      throw new Error('Image generation failed');
+    }
+
+    const outputPath = args.outputFile || 
+      (args.format === 'jpeg' ? 'compressed.jpg' : 'compressed.png');
+
+    fs.writeFileSync(outputPath, result.imageData);
+    
+    if (args.stats) {
+      console.error(`Image saved to: ${outputPath}`);
+      console.error(`Image size: ${Math.floor(result.imageData.length / 1024)} KB (${result.imageData.length} bytes)`);
+      console.error(`Dimensions: 1024x1024`);
+      
+      // Verify format
+      const isPng = result.imageData[0] === 137 && result.imageData[1] === 80;
+      const isJpeg = result.imageData[0] === 0xFF && result.imageData[1] === 0xD8;
+      
+      if (isPng) {
+        console.error('Format: PNG ✓');
+      } else if (isJpeg) {
+        console.error('Format: JPEG ✓');
+      }
+      
+      // Text saved separately
+      const textPath = outputPath.replace(/\.(png|jpg|jpeg)$/i, '.txt');
+      fs.writeFileSync(textPath, result.compressed);
+      console.error(`Compressed text saved to: ${textPath}`);
+    } else {
+      console.error(`Saved to: ${outputPath}`);
+    }
   }
 }
 
@@ -125,7 +196,15 @@ async function main() {
       minInputTokens: 10,
     });
 
-    const result = compressor.compressWithFormat(input, OutputFormat.TEXT);
+    // Determine output format
+    const format = args.format === 'text' ? OutputFormat.TEXT : OutputFormat.IMAGE;
+    
+    const formatOptions = {
+      imageFormat: args.format === 'jpeg' ? 'jpeg' as const : 'png' as const,
+      jpegQuality: args.jpegQuality,
+    };
+
+    const result = compressor.compressWithFormat(input, format, formatOptions);
 
     if (args.stats) {
       console.error('Compression Statistics:');
@@ -137,7 +216,7 @@ async function main() {
       console.error('');
     }
 
-    writeOutput(args, result.compressed);
+    writeOutput(args, result);
   } catch (error) {
     if (error instanceof CompressionError) {
       console.error(`Compression error: ${error.message}`);

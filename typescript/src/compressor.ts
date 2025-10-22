@@ -47,6 +47,11 @@ export interface CompressionResult {
   tokensRemoved: number;
 }
 
+export interface CompressWithFormatOptions {
+  imageFormat?: 'png' | 'jpeg';
+  jpegQuality?: number;
+}
+
 export class Compressor {
   private config: CompressorConfig;
   private filter: StatisticalFilter;
@@ -85,7 +90,11 @@ export class Compressor {
     return this.compressWithFormat(inputText, OutputFormat.TEXT);
   }
 
-  compressWithFormat(inputText: string, format: OutputFormat): CompressionResult {
+  compressWithFormat(
+    inputText: string, 
+    format: OutputFormat, 
+    options?: CompressWithFormatOptions
+  ): CompressionResult {
     // Step 1: Check input size (bytes)
     const inputBytes = Buffer.byteLength(inputText, 'utf8');
     if (inputBytes < this.config.minInputBytes) {
@@ -116,7 +125,14 @@ export class Compressor {
     if (format === OutputFormat.IMAGE) {
       try {
         const renderer = new ImageRenderer();
-        imageData = renderer.renderToPng(compressed);
+        const imageFormat = options?.imageFormat || 'png';
+        
+        if (imageFormat === 'jpeg') {
+          const quality = options?.jpegQuality || 85;
+          imageData = renderer.renderToJpeg(compressed, quality);
+        } else {
+          imageData = renderer.renderToPng(compressed);
+        }
       } catch (error) {
         throw new CompressionError(
           `Failed to render image: ${error instanceof Error ? error.message : String(error)}`

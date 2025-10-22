@@ -71,25 +71,50 @@ const metrics = QualityMetricsCalculator.calculate(original, compressed);
 console.log(QualityMetricsCalculator.format(metrics));
 ```
 
+### Image Compression for Vision Models
+
+Render compressed text as images for optical context compression (inspired by DeepSeek-OCR):
+
+```typescript
+import { Compressor, OutputFormat } from '@hivellm/compression-prompt';
+
+const compressor = new Compressor();
+
+// Generate PNG image
+const result = compressor.compressWithFormat(text, OutputFormat.IMAGE);
+
+if (result.imageData) {
+  fs.writeFileSync('compressed.png', result.imageData);
+  console.log(`Image: ${result.imageData.length} bytes`);
+}
+
+// Generate JPEG with custom quality
+const jpegResult = compressor.compressWithFormat(
+  text, 
+  OutputFormat.IMAGE,
+  { imageFormat: 'jpeg', jpegQuality: 90 }
+);
+```
+
 ### Command Line Usage
 
 ```bash
-# Compress file to stdout
+# Text compression
 npx compress input.txt
+npx compress -r 0.7 input.txt              # Conservative (70%)
+npx compress -s input.txt                  # Show statistics
+npx compress -o output.txt input.txt       # Save to file
 
-# Conservative compression (70%)
-npx compress -r 0.7 input.txt
-
-# Show statistics
-npx compress -s input.txt
-
-# Save to file
-npx compress -o output.txt input.txt
+# Image compression
+npx compress -f png -o output.png input.txt              # Generate PNG
+npx compress -f jpeg -o output.jpg input.txt             # Generate JPEG
+npx compress -f jpeg --jpeg-quality 95 -s input.txt      # High-quality JPEG
 ```
 
 ## Features
 
-- ✅ **Zero Dependencies**: Pure TypeScript, no external libraries
+- ✅ **Statistical Compression**: 50% token reduction with 91% quality retention
+- ✅ **Image Output**: Render as PNG/JPEG for vision models (optical context compression)
 - ✅ **Fast**: Optimized statistical filtering
 - ✅ **Type-Safe**: Full TypeScript support with type definitions
 - ✅ **Node.js & Browser**: Works in both environments
@@ -108,7 +133,21 @@ class Compressor {
   );
   
   compress(text: string): CompressionResult;
-  compressWithFormat(text: string, format: OutputFormat): CompressionResult;
+  compressWithFormat(
+    text: string, 
+    format: OutputFormat,
+    options?: CompressWithFormatOptions
+  ): CompressionResult;
+}
+
+interface CompressWithFormatOptions {
+  imageFormat?: 'png' | 'jpeg';
+  jpegQuality?: number;  // 1-100, default: 85
+}
+
+enum OutputFormat {
+  TEXT = 'text',
+  IMAGE = 'image',
 }
 ```
 
@@ -140,6 +179,36 @@ interface StatisticalFilterConfig {
   minGapBetweenCritical: number;
 }
 ```
+
+### ImageRenderer
+
+```typescript
+import { ImageRenderer, ImageFormat } from '@hivellm/compression-prompt';
+
+const renderer = new ImageRenderer({
+  width: 1024,
+  height: 1024,
+  fontSize: 12.5,
+  lineSpacing: 1.2,
+  // ... more options
+});
+
+const pngData = renderer.renderToPng(text);
+const jpegData = renderer.renderToJpeg(text, 85);  // quality: 1-100
+```
+
+## Examples
+
+### Paper to Images
+
+Convert academic papers or long documents to compressed images:
+
+```bash
+cd typescript
+npx ts-node examples/paper-to-images.ts
+```
+
+Generates compressed images at different compression ratios (30%, 50%, 70%).
 
 ## Development
 
