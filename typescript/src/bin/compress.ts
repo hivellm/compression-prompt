@@ -84,7 +84,7 @@ function parseArgs(argv: string[]): CliArgs {
         break;
 
       case '-f':
-      case '--format':
+      case '--format': {
         i++;
         if (i >= argv.length) {
           throw new Error('Missing value for --format');
@@ -95,6 +95,7 @@ function parseArgs(argv: string[]): CliArgs {
         }
         args.format = (format === 'jpg' ? 'jpeg' : format) as 'text' | 'png' | 'jpeg';
         break;
+      }
 
       case '--jpeg-quality':
         i++;
@@ -149,26 +150,28 @@ function writeOutput(args: CliArgs, result: any): void {
       throw new Error('Image generation failed');
     }
 
-    const outputPath = args.outputFile || 
-      (args.format === 'jpeg' ? 'compressed.jpg' : 'compressed.png');
+    const outputPath =
+      args.outputFile || (args.format === 'jpeg' ? 'compressed.jpg' : 'compressed.png');
 
     fs.writeFileSync(outputPath, result.imageData);
-    
+
     if (args.stats) {
       console.error(`Image saved to: ${outputPath}`);
-      console.error(`Image size: ${Math.floor(result.imageData.length / 1024)} KB (${result.imageData.length} bytes)`);
+      console.error(
+        `Image size: ${Math.floor(result.imageData.length / 1024)} KB (${result.imageData.length} bytes)`
+      );
       console.error(`Dimensions: 1024x1024`);
-      
+
       // Verify format
       const isPng = result.imageData[0] === 137 && result.imageData[1] === 80;
-      const isJpeg = result.imageData[0] === 0xFF && result.imageData[1] === 0xD8;
-      
+      const isJpeg = result.imageData[0] === 0xff && result.imageData[1] === 0xd8;
+
       if (isPng) {
         console.error('Format: PNG ✓');
       } else if (isJpeg) {
         console.error('Format: JPEG ✓');
       }
-      
+
       // Text saved separately
       const textPath = outputPath.replace(/\.(png|jpg|jpeg)$/i, '.txt');
       fs.writeFileSync(textPath, result.compressed);
@@ -198,9 +201,9 @@ async function main() {
 
     // Determine output format
     const format = args.format === 'text' ? OutputFormat.TEXT : OutputFormat.IMAGE;
-    
+
     const formatOptions = {
-      imageFormat: args.format === 'jpeg' ? 'jpeg' as const : 'png' as const,
+      imageFormat: args.format === 'jpeg' ? ('jpeg' as const) : ('png' as const),
       jpegQuality: args.jpegQuality,
     };
 
@@ -233,4 +236,3 @@ async function main() {
 }
 
 main();
-

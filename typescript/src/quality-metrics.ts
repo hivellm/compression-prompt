@@ -12,10 +12,50 @@ export interface QualityMetrics {
 
 export class QualityMetricsCalculator {
   private static readonly STOP_WORDS = new Set([
-    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with',
-    'by', 'from', 'as', 'is', 'was', 'are', 'were', 'be', 'been', 'being', 'have', 'has',
-    'had', 'do', 'does', 'did', 'will', 'would', 'should', 'could', 'may', 'might', 'must',
-    'can', 'this', 'that', 'these', 'those', 'we', 'they', 'it',
+    'the',
+    'a',
+    'an',
+    'and',
+    'or',
+    'but',
+    'in',
+    'on',
+    'at',
+    'to',
+    'for',
+    'of',
+    'with',
+    'by',
+    'from',
+    'as',
+    'is',
+    'was',
+    'are',
+    'were',
+    'be',
+    'been',
+    'being',
+    'have',
+    'has',
+    'had',
+    'do',
+    'does',
+    'did',
+    'will',
+    'would',
+    'should',
+    'could',
+    'may',
+    'might',
+    'must',
+    'can',
+    'this',
+    'that',
+    'these',
+    'those',
+    'we',
+    'they',
+    'it',
   ]);
 
   static calculate(original: string, compressed: string): QualityMetrics {
@@ -124,4 +164,3 @@ export class QualityMetricsCalculator {
     return preserved / original.size;
   }
 }
-

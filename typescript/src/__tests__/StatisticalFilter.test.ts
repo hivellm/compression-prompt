@@ -30,9 +30,7 @@ describe('StatisticalFilter', () => {
       const compressed = filter.compress(text);
 
       // Code block should be in the output even with aggressive compression
-      expect(
-        compressed.includes('```rust') || compressed.includes('println!')
-      ).toBe(true);
+      expect(compressed.includes('```rust') || compressed.includes('println!')).toBe(true);
     });
 
     it('should protect JSON blocks', () => {
@@ -46,7 +44,9 @@ describe('StatisticalFilter', () => {
 
       // JSON should be preserved
       expect(
-        compressed.includes('{"key":') || compressed.includes('"key"') || compressed.includes('value')
+        compressed.includes('{"key":') ||
+          compressed.includes('"key"') ||
+          compressed.includes('value')
       ).toBe(true);
     });
 
@@ -134,9 +134,7 @@ describe('StatisticalFilter', () => {
       const compressed = filter.compress(text);
 
       // Identifiers should be preserved
-      expect(
-        compressed.includes('getUserData') || compressed.includes('user_service')
-      ).toBe(true);
+      expect(compressed.includes('getUserData') || compressed.includes('user_service')).toBe(true);
     });
 
     it('should fill gaps between critical tokens', () => {
@@ -222,4 +220,3 @@ describe('StatisticalFilter', () => {
     });
   });
 });
-

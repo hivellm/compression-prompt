@@ -1,12 +1,12 @@
 /**
  * Dense text-to-image rendering for vision model consumption.
- * 
+ *
  * Inspired by DeepSeek-OCR's optical context compression approach, this module
  * renders compressed text into fixed-size 1024x1024 monospace images optimized
  * for vision model processing.
  */
 
-import { createCanvas, Canvas, CanvasRenderingContext2D } from '@napi-rs/canvas';
+import { createCanvas, CanvasRenderingContext2D } from '@napi-rs/canvas';
 
 /**
  * Errors that can occur during image rendering.
@@ -19,7 +19,10 @@ export class ImageError extends Error {
 }
 
 export class TextTooLargeError extends ImageError {
-  constructor(public requiredLines: number, public maxLines: number) {
+  constructor(
+    public requiredLines: number,
+    public maxLines: number
+  ) {
     super(`Text too large to fit in image (requires ${requiredLines} lines, max ${maxLines})`);
     this.name = 'TextTooLargeError';
   }
@@ -31,31 +34,31 @@ export class TextTooLargeError extends ImageError {
 export interface ImageRendererConfig {
   /** Image width in pixels (default: 1024) */
   width: number;
-  
+
   /** Image height in pixels (default: 1024) */
   height: number;
-  
+
   /** Base font size for monospace text (default: 12.5) */
   fontSize: number;
-  
+
   /** Line spacing multiplier (default: 1.2 for comfortable reading) */
   lineSpacing: number;
-  
+
   /** Horizontal margin in pixels (default: 20) */
   marginX: number;
-  
+
   /** Vertical margin in pixels (default: 20) */
   marginY: number;
-  
+
   /** Background color RGB (default: white [255, 255, 255]) */
   bgColor: [number, number, number];
-  
+
   /** Text color RGB (default: black [0, 0, 0]) */
   textColor: [number, number, number];
-  
+
   /** Minimum font size when auto-scaling (default: 7.0) */
   minFontSize: number;
-  
+
   /** Font family for text rendering (default: 'monospace') */
   fontFamily: string;
 }
@@ -99,13 +102,13 @@ export class ImageRenderer {
 
   /**
    * Render text to PNG image bytes.
-   * 
+   *
    * This method:
    * 1. Calculates optimal font size to fit text in image
    * 2. Wraps text into lines
    * 3. Renders each line with monospace font
    * 4. Encodes final image as PNG
-   * 
+   *
    * @param text - The text to render
    * @returns PNG image data as Buffer
    * @throws ImageError if rendering fails
@@ -116,7 +119,7 @@ export class ImageRenderer {
 
   /**
    * Render text to JPEG image bytes.
-   * 
+   *
    * @param text - The text to render
    * @param quality - JPEG quality (1-100, higher = better quality but larger file)
    * @returns JPEG image data as Buffer
@@ -161,7 +164,7 @@ export class ImageRenderer {
 
   /**
    * Calculate optimal font size to fit text in image.
-   * 
+   *
    * Starts with config fontSize and reduces until text fits.
    */
   private calculateOptimalFontSize(text: string): number {
@@ -190,7 +193,7 @@ export class ImageRenderer {
    * Calculate maximum number of lines that fit in image height.
    */
   private calculateMaxLines(fontSize: number): number {
-    const availableHeight = this.config.height - (this.config.marginY * 2);
+    const availableHeight = this.config.height - this.config.marginY * 2;
     const lineHeight = fontSize * this.config.lineSpacing;
 
     if (lineHeight === 0) {
@@ -209,7 +212,7 @@ export class ImageRenderer {
     const ctx = canvas.getContext('2d');
     ctx.font = `${fontSize}px ${this.config.fontFamily}`;
 
-    const availableWidth = this.config.width - (this.config.marginX * 2);
+    const availableWidth = this.config.width - this.config.marginX * 2;
 
     const lines: string[] = [];
     let currentLine = '';
@@ -249,11 +252,7 @@ export class ImageRenderer {
   /**
    * Render lines of text onto the canvas context.
    */
-  private renderLines(
-    ctx: CanvasRenderingContext2D,
-    lines: string[],
-    fontSize: number
-  ): void {
+  private renderLines(ctx: CanvasRenderingContext2D, lines: string[], fontSize: number): void {
     // Set up text rendering
     ctx.font = `${fontSize}px ${this.config.fontFamily}`;
     const [r, g, b] = this.config.textColor;
@@ -278,4 +277,3 @@ export class ImageRenderer {
     }
   }
 }
-

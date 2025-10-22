@@ -2,7 +2,6 @@
 
 import { Command } from 'commander';
 import * as fs from 'fs';
-import * as path from 'path';
 import { Compressor, OutputFormat } from './compressor';
 import { QualityMetricsCalculator } from './quality-metrics';
 
@@ -13,7 +12,10 @@ program
   .description('Compress text for LLM prompts - 50% token reduction with 91% quality retention')
   .version('0.1.0')
   .argument('[input]', 'Input file (defaults to stdin)')
-  .option('-o, --output <file>', 'Output file (defaults to stdout for text, compressed.png for image)')
+  .option(
+    '-o, --output <file>',
+    'Output file (defaults to stdout for text, compressed.png for image)'
+  )
   .option('-r, --ratio <ratio>', 'Compression ratio (0.0-1.0, default: 0.5)', parseFloat, 0.5)
   .option('-s, --stats', 'Show compression statistics')
   .option('--quality', 'Show quality metrics')
@@ -43,7 +45,8 @@ program
       }
 
       // Determine output format
-      const format = options.format.toLowerCase() === 'text' ? OutputFormat.TEXT : OutputFormat.IMAGE;
+      const format =
+        options.format.toLowerCase() === 'text' ? OutputFormat.TEXT : OutputFormat.IMAGE;
 
       // Configure compressor
       const compressor = new Compressor({
@@ -54,12 +57,13 @@ program
 
       // Compress with format options
       const formatOptions = {
-        imageFormat: (options.format.toLowerCase() === 'jpeg' || options.format.toLowerCase() === 'jpg') 
-          ? 'jpeg' as const
-          : 'png' as const,
+        imageFormat:
+          options.format.toLowerCase() === 'jpeg' || options.format.toLowerCase() === 'jpg'
+            ? ('jpeg' as const)
+            : ('png' as const),
         jpegQuality: options.jpegQuality,
       };
-      
+
       const result = compressor.compressWithFormat(text, format, formatOptions);
 
       // Calculate quality metrics if requested
@@ -107,28 +111,31 @@ program
           process.exit(1);
         }
 
-        const outputPath = options.output || 
-          (options.format.toLowerCase() === 'jpeg' || options.format.toLowerCase() === 'jpg' 
-            ? 'compressed.jpg' 
+        const outputPath =
+          options.output ||
+          (options.format.toLowerCase() === 'jpeg' || options.format.toLowerCase() === 'jpg'
+            ? 'compressed.jpg'
             : 'compressed.png');
 
         fs.writeFileSync(outputPath, result.imageData);
-        
+
         if (options.stats) {
           console.error(`Image saved to: ${outputPath}`);
-          console.error(`Image size: ${Math.floor(result.imageData.length / 1024)} KB (${result.imageData.length} bytes)`);
+          console.error(
+            `Image size: ${Math.floor(result.imageData.length / 1024)} KB (${result.imageData.length} bytes)`
+          );
           console.error(`Dimensions: 1024x1024`);
-          
+
           // Verify format
           const isPng = result.imageData[0] === 137 && result.imageData[1] === 80;
-          const isJpeg = result.imageData[0] === 0xFF && result.imageData[1] === 0xD8;
-          
+          const isJpeg = result.imageData[0] === 0xff && result.imageData[1] === 0xd8;
+
           if (isPng) {
             console.error('Format: PNG ✓');
           } else if (isJpeg) {
             console.error('Format: JPEG ✓');
           }
-          
+
           // Text saved separately
           const textPath = outputPath.replace(/\.(png|jpg|jpeg)$/i, '.txt');
           fs.writeFileSync(textPath, result.compressed);
@@ -148,4 +155,3 @@ program
   });
 
 program.parse();
-

@@ -3,7 +3,7 @@
  */
 
 import { StatisticalFilter, StatisticalFilterConfig } from './statistical-filter';
-import { ImageRenderer, ImageRendererConfig } from './image-renderer';
+import { ImageRenderer } from './image-renderer';
 
 export enum OutputFormat {
   TEXT = 'text',
@@ -25,7 +25,10 @@ export class NegativeGainError extends CompressionError {
 }
 
 export class InputTooShortError extends CompressionError {
-  constructor(public size: number, public minimum: number) {
+  constructor(
+    public size: number,
+    public minimum: number
+  ) {
     super(`Input too short (${size} tokens/bytes), minimum is ${minimum}`);
     this.name = 'InputTooShortError';
   }
@@ -56,10 +59,7 @@ export class Compressor {
   private config: CompressorConfig;
   private filter: StatisticalFilter;
 
-  constructor(
-    config?: Partial<CompressorConfig>,
-    filterConfig?: Partial<StatisticalFilterConfig>
-  ) {
+  constructor(config?: Partial<CompressorConfig>, filterConfig?: Partial<StatisticalFilterConfig>) {
     this.config = {
       targetRatio: 0.5,
       minInputTokens: 100,
@@ -91,8 +91,8 @@ export class Compressor {
   }
 
   compressWithFormat(
-    inputText: string, 
-    format: OutputFormat, 
+    inputText: string,
+    format: OutputFormat,
     options?: CompressWithFormatOptions
   ): CompressionResult {
     // Step 1: Check input size (bytes)
@@ -126,7 +126,7 @@ export class Compressor {
       try {
         const renderer = new ImageRenderer();
         const imageFormat = options?.imageFormat || 'png';
-        
+
         if (imageFormat === 'jpeg') {
           const quality = options?.jpegQuality || 85;
           imageData = renderer.renderToJpeg(compressed, quality);
@@ -151,4 +151,3 @@ export class Compressor {
     };
   }
 }
-
