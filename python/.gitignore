@@ -69,3 +69,10 @@ dmypy.json
 # Ruff
 .ruff_cache/
 
+# PyPI credentials
+.pypirc
+
+# Test outputs
+*.jpg
+*.png
+
