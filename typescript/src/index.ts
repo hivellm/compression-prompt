@@ -1,14 +1,12 @@
 /**
- * @hivellm/compression-prompt
+ * Compression Prompt - Fast statistical compression for LLM prompts
  * 
- * Fast statistical compression for LLM prompts
- * 50% token reduction with 91% quality retention
+ * Statistical compression using intelligent filtering to achieve 50% token reduction
+ * with 91% quality retention.
  */
 
-export { StatisticalFilter } from './StatisticalFilter';
-export { QualityMetrics } from './QualityMetrics';
-export * from './types';
+export { Compressor, CompressorConfig, CompressionResult, OutputFormat } from './compressor';
+export { StatisticalFilter, StatisticalFilterConfig, WordImportance } from './statistical-filter';
+export { QualityMetrics } from './quality-metrics';
 
-// Re-export for convenience
-export { StatisticalFilter as default } from './StatisticalFilter';
-
+export const VERSION = '0.1.0';

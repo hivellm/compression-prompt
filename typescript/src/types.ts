@@ -57,6 +57,12 @@ export interface CompressionResult {
   
   /** Number of tokens removed */
   tokensRemoved: number;
+  
+  /** Optional image data (for future image output support) */
+  imageData?: Uint8Array;
+  
+  /** Output format used */
+  format?: 'text' | 'image';
 }
 
 /**
@@ -92,7 +98,7 @@ export interface WordImportance {
   /** Combined importance score */
   score: number;
   
-  /** Original character position */
+  /** Original character position in the source text */
   charPosition: number;
 }
 

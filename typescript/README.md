@@ -1,228 +1,168 @@
-# @hivellm/compression-prompt (TypeScript)
+# Compression Prompt - TypeScript/JavaScript Implementation
 
-> Fast statistical compression for LLM prompts - 50% token reduction with 91% quality retention
+> Fast, intelligent prompt compression for LLMs - Save 50% tokens while maintaining 91% quality
 
-[![npm version](https://img.shields.io/npm/v/@hivellm/compression-prompt)](https://www.npmjs.com/package/@hivellm/compression-prompt)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+TypeScript/JavaScript port of the Rust implementation. Achieves **50% token reduction** with **91% quality retention** using pure statistical filtering.
 
-A TypeScript/JavaScript implementation of statistical prompt compression that reduces LLM token usage by 50% while maintaining 91% quality.
+## Quick Start
 
-## 🎯 Features
-
-- **💰 Save Money**: 50% fewer tokens = 50% lower LLM costs
-- **⚡ Ultra Fast**: Milliseconds compression time, no external dependencies
-- **🎓 Proven Quality**: 91% quality retention validated on Claude Sonnet
-- **📦 Zero Dependencies**: Pure TypeScript with no runtime dependencies
-- **🔧 Configurable**: Adjust compression ratio and behavior
-- **🛠️ CLI Tool**: Compress files from command line
-
-## 📦 Installation
+### Installation
 
 ```bash
 npm install @hivellm/compression-prompt
 ```
 
-Or with yarn:
+Or from source:
 
 ```bash
-yarn add @hivellm/compression-prompt
+cd typescript
+npm install
+npm run build
 ```
-
-## 🚀 Quick Start
 
 ### Basic Usage
 
 ```typescript
-import { StatisticalFilter } from '@hivellm/compression-prompt';
+import { Compressor } from '@hivellm/compression-prompt';
 
-const filter = new StatisticalFilter();
-const compressed = filter.compress('Your long text here...');
+const compressor = new Compressor();
 
-console.log(compressed);
+const text = `
+Your long text here...
+This will be compressed using statistical filtering
+to save 50% tokens while maintaining quality.
+`;
+
+const result = compressor.compress(text);
+
+console.log(`Original: ${result.originalTokens} tokens`);
+console.log(`Compressed: ${result.compressedTokens} tokens`);
+console.log(`Saved: ${result.tokensRemoved} tokens (${(1-result.compressionRatio)*100}%)`);
+console.log(`\nCompressed text:\n${result.compressed}`);
 ```
 
-### With Metrics
+### Advanced Configuration
 
 ```typescript
-import { StatisticalFilter } from '@hivellm/compression-prompt';
+import { Compressor } from '@hivellm/compression-prompt';
 
-const filter = new StatisticalFilter();
-const result = filter.compressWithMetrics('Your text here...');
+const compressor = new Compressor(
+  { targetRatio: 0.7 },  // Keep 70% of tokens
+  {
+    compressionRatio: 0.7,
+    idfWeight: 0.3,
+    positionWeight: 0.2,
+    posWeight: 0.2,
+    entityWeight: 0.2,
+    entropyWeight: 0.1,
+    domainTerms: ['YourTerm'],
+  }
+);
 
-console.log(`Compressed: ${result.compressed}`);
-console.log(`Saved ${result.tokensRemoved} tokens (${(result.compressionRatio * 100).toFixed(1)}% reduction)`);
-```
-
-### Custom Configuration
-
-```typescript
-import { StatisticalFilter } from '@hivellm/compression-prompt';
-
-// Conservative compression (70% retention)
-const conservative = new StatisticalFilter({
-  compressionRatio: 0.7,
-});
-
-// Aggressive compression (30% retention)
-const aggressive = new StatisticalFilter({
-  compressionRatio: 0.3,
-});
-
-// Custom domain terms
-const custom = new StatisticalFilter({
-  compressionRatio: 0.5,
-  domainTerms: ['MyProduct', 'ImportantTerm'],
-  preserveNegations: true,
-});
+const result = compressor.compress(text);
 ```
 
 ### Quality Metrics
 
 ```typescript
-import { StatisticalFilter, QualityMetrics } from '@hivellm/compression-prompt';
+import { QualityMetricsCalculator } from '@hivellm/compression-prompt';
 
-const filter = new StatisticalFilter();
-const compressed = filter.compress(originalText);
-
-const quality = QualityMetrics.calculate(originalText, compressed);
-console.log(`Quality Score: ${(quality.overallScore * 100).toFixed(1)}%`);
-console.log(`Keyword Retention: ${(quality.keywordRetention * 100).toFixed(1)}%`);
-console.log(`Entity Retention: ${(quality.entityRetention * 100).toFixed(1)}%`);
+const metrics = QualityMetricsCalculator.calculate(original, compressed);
+console.log(QualityMetricsCalculator.format(metrics));
 ```
 
-## 🖥️ CLI Usage
+### Command Line Usage
 
 ```bash
-# Install globally
-npm install -g @hivellm/compression-prompt
+# Compress file to stdout
+npx compress input.txt
 
-# Compress a file
-compress input.txt -o output.txt
+# Conservative compression (70%)
+npx compress -r 0.7 input.txt
 
-# With statistics
-compress input.txt -s
+# Show statistics
+npx compress -s input.txt
 
-# Custom compression ratio
-compress input.txt -r 0.7 -s
-
-# From stdin
-cat input.txt | compress -s
-
-# Show quality metrics
-compress input.txt --quality -s
+# Save to file
+npx compress -o output.txt input.txt
 ```
 
-### CLI Options
+## Features
 
-```
-Usage: compress [options] [input]
+- ✅ **Zero Dependencies**: Pure TypeScript, no external libraries
+- ✅ **Fast**: Optimized statistical filtering
+- ✅ **Type-Safe**: Full TypeScript support with type definitions
+- ✅ **Node.js & Browser**: Works in both environments
+- ✅ **Smart Filtering**: Preserves code, JSON, paths, identifiers
+- ✅ **Customizable**: Fine-tune weights for your use case
 
-Options:
-  -V, --version         output the version number
-  -o, --output <file>   Output file (defaults to stdout)
-  -r, --ratio <ratio>   Compression ratio (0.0-1.0, default: 0.5)
-  -s, --stats           Show compression statistics
-  --quality             Show quality metrics
-  -h, --help            display help for command
-```
+## API Reference
 
-## 📊 Configuration Options
+### Compressor
 
 ```typescript
-interface StatisticalFilterConfig {
-  compressionRatio: number;          // 0.0-1.0 (default: 0.5)
-  idfWeight: number;                 // IDF score weight (default: 0.3)
-  positionWeight: number;            // Position score weight (default: 0.2)
-  posWeight: number;                 // POS score weight (default: 0.2)
-  entityWeight: number;              // Entity score weight (default: 0.2)
-  entropyWeight: number;             // Entropy score weight (default: 0.1)
-  enableProtectionMasks: boolean;    // Protect code/paths (default: true)
-  enableContextualStopwords: boolean; // Smart stopword removal (default: true)
-  preserveNegations: boolean;        // Keep negations (default: true)
-  preserveComparators: boolean;      // Keep comparators (default: true)
-  domainTerms: string[];             // Terms to always preserve
-  minGapBetweenCritical: number;     // Gap filling threshold (default: 3)
+class Compressor {
+  constructor(
+    config?: Partial<CompressorConfig>,
+    filterConfig?: Partial<StatisticalFilterConfig>
+  );
+  
+  compress(text: string): CompressionResult;
+  compressWithFormat(text: string, format: OutputFormat): CompressionResult;
 }
 ```
 
-## 🎨 Use Cases
+### CompressorConfig
 
-### ✅ Perfect For:
-
-- **RAG Systems**: Compress retrieved context (50% token savings)
-- **Q&A Systems**: Reduce prompt size while preserving semantics
-- **Long Document Processing**: Pre-compress before sending to LLM
-- **Cost Optimization**: 50% fewer tokens = 50% lower API costs
-- **Real-time Applications**: Milliseconds compression time
-
-### ⚠️ Not Ideal For:
-
-- Creative writing (may lose style/voice)
-- Poetry or literary text
-- Very short texts (< 100 tokens)
-- When every word matters (legal contracts, exact quotes)
-
-## 💰 Cost Savings
-
-**Example with GPT-4 ($5/1M input tokens):**
-
-| Usage | Before | After (50% compression) | Savings |
-|-------|--------|------------------------|---------|
-| 1M tokens | $5.00 | $2.50 | $2.50 |
-| 100M tokens/month | $500 | $250 | $250/month |
-| 1B tokens/month | $5,000 | $2,500 | $2,500/month |
-
-**Annual savings for high-volume apps:**
-- 100M tokens/month: **$3,000/year** 💰
-- 1B tokens/month: **$30,000/year** 💰
-
-## 🧪 Testing
-
-```bash
-# Run tests
-npm test
-
-# With coverage
-npm run test:coverage
-
-# Watch mode
-npm run test:watch
+```typescript
+interface CompressorConfig {
+  targetRatio: number;       // 0.0-1.0, default: 0.5
+  minInputTokens: number;    // default: 100
+  minInputBytes: number;     // default: 1024
+}
 ```
 
-## 📝 API Reference
+### StatisticalFilterConfig
 
-### StatisticalFilter
+```typescript
+interface StatisticalFilterConfig {
+  compressionRatio: number;
+  idfWeight: number;
+  positionWeight: number;
+  posWeight: number;
+  entityWeight: number;
+  entropyWeight: number;
+  enableProtectionMasks: boolean;
+  enableContextualStopwords: boolean;
+  preserveNegations: boolean;
+  preserveComparators: boolean;
+  domainTerms: string[];
+  minGapBetweenCritical: number;
+}
+```
 
-#### `constructor(config?: Partial<StatisticalFilterConfig>)`
-Create a new filter with optional configuration.
+## Development
 
-#### `compress(text: string): string`
-Compress text and return the compressed string.
+```bash
+# Build
+npm run build
 
-#### `compressWithMetrics(text: string): CompressionResult`
-Compress text and return detailed metrics.
+# Test
+npm test
 
-### QualityMetrics
+# Lint
+npm run lint
 
-#### `static calculate(original: string, compressed: string): QualityMetrics`
-Calculate quality metrics by comparing original and compressed text.
+# Format
+npm run format
+```
 
-## 🤝 Contributing
+## License
 
-Contributions welcome! Please read our contributing guidelines.
+MIT
 
-## 📄 License
+## See Also
 
-MIT © HiveLLM Team
-
-## 🔗 Related
-
-- [Rust Implementation](../rust) - Original Rust implementation
-- [GitHub Repository](https://github.com/hivellm/compression-prompt)
-- [Documentation](../docs)
-
-## ⭐ Support
-
-If you find this useful, please star the repository!
-
+- [Rust Implementation](../rust/) - High-performance original
+- [Python Implementation](../python/) - Python port
+- [Main README](../README.md) - Project overview

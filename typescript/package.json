@@ -4,66 +4,39 @@
   "description": "Fast statistical compression for LLM prompts - 50% token reduction with 91% quality retention",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "bin": {
-    "compress": "dist/cli.js"
-  },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch",
     "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
     "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run test && npm run lint"
+    "format": "prettier --write src/**/*.ts",
+    "compress": "node dist/bin/compress.js"
   },
   "keywords": [
     "llm",
     "compression",
     "prompt",
     "optimization",
-    "token-reduction",
-    "ai",
-    "nlp",
-    "text-processing"
+    "token-reduction"
   ],
   "author": "HiveLLM Team",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/hivellm/compression-prompt.git",
-    "directory": "typescript"
+    "url": "https://github.com/hivellm/compression-prompt"
   },
-  "bugs": {
-    "url": "https://github.com/hivellm/compression-prompt/issues"
-  },
-  "homepage": "https://github.com/hivellm/compression-prompt#readme",
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "engines": {
-    "node": ">=16.0.0"
+  "bin": {
+    "compress": "./dist/bin/compress.js"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.0",
-    "jest": "^29.5.0",
+    "jest": "^29.0.0",
     "prettier": "^3.0.0",
-    "ts-jest": "^29.1.0",
-    "ts-node": "^10.9.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.3.0"
   },
-  "dependencies": {
-    "commander": "^11.0.0"
+  "engines": {
+    "node": ">=16.0.0"
   }
 }
-
