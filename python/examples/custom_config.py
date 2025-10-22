@@ -16,8 +16,8 @@ def compress_with_config(text: str, ratio: float, name: str):
     
     config = CompressorConfig(
         target_ratio=ratio,
-        min_input_bytes=10,
-        min_input_tokens=5
+        min_input_bytes=100,
+        min_input_tokens=10
     )
     
     filter_config = StatisticalFilterConfig(compression_ratio=ratio)
@@ -36,12 +36,18 @@ def compress_with_config(text: str, ratio: float, name: str):
 def main():
     """Demonstrate different compression configurations."""
     
-    text = """
+    base_text = """
     The quick brown fox jumps over the lazy dog. This sentence contains 
     every letter of the alphabet. Natural Language Processing uses 
     statistical methods to analyze text. Machine Learning models can 
-    be trained on large datasets to understand patterns.
+    be trained on large datasets to understand patterns. Deep Learning 
+    architectures process information through multiple layers. Computer 
+    Vision interprets visual data from images and videos. Reinforcement 
+    Learning optimizes sequential decision-making processes.
     """
+    
+    # Repeat to meet minimum size
+    text = base_text * 5
     
     print("=" * 70)
     print("CUSTOM CONFIGURATION EXAMPLES")
@@ -65,14 +71,16 @@ def main():
     print("\n\nCUSTOM DOMAIN TERMS EXAMPLE:")
     print("-" * 70)
     
-    tech_text = "Use TensorFlow and PyTorch for deep learning on GPU with CUDA"
+    tech_base = "Use TensorFlow and PyTorch for deep learning on GPU with CUDA. " \
+                "These frameworks provide optimized implementations for neural networks. "
+    tech_text = tech_base * 20  # Make it long enough
     
     filter_config = StatisticalFilterConfig(
         compression_ratio=0.5,
         domain_terms=["TensorFlow", "PyTorch", "CUDA", "GPU"]
     )
     
-    config = CompressorConfig(min_input_bytes=10, min_input_tokens=5)
+    config = CompressorConfig(min_input_bytes=100, min_input_tokens=10)
     compressor = Compressor(config, filter_config)
     result = compressor.compress(tech_text)
     

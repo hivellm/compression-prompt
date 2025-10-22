@@ -3,41 +3,27 @@
 
 import sys
 import argparse
-from pathlib import Path
+from typing import Optional
 
-# Add parent directory to path for local development
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from compression_prompt import (
+from .compressor import (
     Compressor, CompressorConfig, StatisticalFilterConfig,
     OutputFormat, CompressionError
 )
 
 
-def print_usage():
-    """Print usage information."""
-    print("""Usage: compress [OPTIONS] [INPUT_FILE]
-
-Options:
-  -r, --ratio <RATIO>      Compression ratio (0.0-1.0, default: 0.5)
-  -o, --output <FILE>      Output file (default: stdout)
-  -s, --stats              Show compression statistics
-  -h, --help               Show this help message
-
+def main() -> int:
+    """Main CLI entry point."""
+    parser = argparse.ArgumentParser(
+        description='Compress text using statistical filtering',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
 Examples:
   compress input.txt                        # Compress to stdout
   compress -r 0.7 input.txt                 # Conservative (70%)
   compress -r 0.3 input.txt                 # Aggressive (30%)
   cat input.txt | compress                  # Read from stdin
   compress -s input.txt                     # Show statistics
-""")
-
-
-def main():
-    """Main CLI entry point."""
-    parser = argparse.ArgumentParser(
-        description='Compress text using statistical filtering',
-        add_help=False
+"""
     )
     
     parser.add_argument('input_file', nargs='?', type=str,
@@ -48,19 +34,14 @@ def main():
                        help='Output file (default: stdout)')
     parser.add_argument('-s', '--stats', action='store_true',
                        help='Show compression statistics')
-    parser.add_argument('-h', '--help', action='store_true',
-                       help='Show this help message')
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.1.0')
     
     args = parser.parse_args()
-    
-    if args.help:
-        print_usage()
-        sys.exit(0)
     
     # Validate ratio
     if not 0.0 <= args.ratio <= 1.0:
         print("Error: Ratio must be between 0.0 and 1.0", file=sys.stderr)
-        sys.exit(1)
+        return 1
     
     # Read input
     try:
@@ -71,7 +52,7 @@ def main():
             input_text = sys.stdin.read()
     except Exception as e:
         print(f"Error reading input: {e}", file=sys.stderr)
-        sys.exit(1)
+        return 1
     
     # Configure compressor
     compressor_config = CompressorConfig(
@@ -91,7 +72,7 @@ def main():
         result = compressor.compress_with_format(input_text, OutputFormat.TEXT)
     except CompressionError as e:
         print(f"Compression error: {e}", file=sys.stderr)
-        sys.exit(1)
+        return 1
     
     # Show stats if requested
     if args.stats:
@@ -112,9 +93,11 @@ def main():
             print(result.compressed)
     except Exception as e:
         print(f"Error writing output: {e}", file=sys.stderr)
-        sys.exit(1)
+        return 1
+    
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
 

@@ -13,8 +13,8 @@ from compression_prompt import Compressor, QualityMetrics
 def main():
     """Demonstrate basic compression usage."""
     
-    # Sample text
-    text = """
+    # Sample text (needs to be >1024 bytes)
+    base_text = """
     Machine Learning is a subset of Artificial Intelligence that focuses on 
     building systems that can learn from data. Deep Learning, a specialized 
     branch of Machine Learning, uses neural networks with multiple layers to 
@@ -22,8 +22,15 @@ def main():
     another important area that enables computers to understand and generate 
     human language. Computer Vision allows machines to interpret visual 
     information from the world. These technologies are transforming industries 
-    like healthcare, finance, and autonomous vehicles.
+    like healthcare, finance, and autonomous vehicles. Reinforcement Learning 
+    enables agents to learn optimal behaviors through trial and error. Transfer 
+    Learning allows models to leverage knowledge from one task to improve 
+    performance on related tasks. Generative AI creates new content including 
+    text, images, and code.
     """
+    
+    # Repeat to meet minimum size requirement
+    text = base_text * 3
     
     print("=" * 70)
     print("COMPRESSION-PROMPT - Python Example")

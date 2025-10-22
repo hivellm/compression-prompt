@@ -44,9 +44,11 @@ setup(
             "Pillow>=10.0.0",
         ],
     },
-    scripts=[
-        "bin/compress",
-    ],
+    entry_points={
+        'console_scripts': [
+            'compress=compression_prompt.cli:main',
+        ],
+    },
     keywords=["llm", "compression", "prompt", "optimization", "token-reduction"],
     project_urls={
         "Bug Reports": "https://github.com/hivellm/compression-prompt/issues",

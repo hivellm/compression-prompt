@@ -12,27 +12,33 @@ from compression_prompt import Compressor, QualityMetrics
 def simulate_rag_system():
     """Simulate a RAG system with context compression."""
     
-    # Simulate retrieved documents
-    retrieved_docs = [
+    # Simulate retrieved documents (repeated to meet minimum size)
+    base_docs = [
         """
         Machine Learning (ML) is a subset of artificial intelligence that focuses on 
         building systems that can learn from and make decisions based on data. Deep 
         Learning, a specialized branch of Machine Learning, uses neural networks with 
-        multiple layers to process complex patterns in large datasets.
+        multiple layers to process complex patterns in large datasets. These models 
+        are trained on massive amounts of data to recognize patterns and make predictions.
         """,
         """
         Natural Language Processing (NLP) enables computers to understand, interpret, 
         and generate human language. Modern NLP systems use transformer architectures 
         like BERT and GPT to achieve state-of-the-art performance on tasks such as 
-        translation, summarization, and question answering.
+        translation, summarization, and question answering. These models process text 
+        through attention mechanisms that capture contextual relationships.
         """,
         """
         Computer Vision is a field of AI that trains computers to interpret and 
         understand visual information from the world. Applications include image 
         recognition, object detection, facial recognition, and autonomous vehicle 
-        navigation systems.
+        navigation systems. Convolutional neural networks process visual data through 
+        multiple layers to extract features and patterns.
         """
     ]
+    
+    # Repeat documents to meet minimum size requirement
+    retrieved_docs = base_docs * 2
     
     # Combine all retrieved context
     full_context = "\n\n".join(retrieved_docs)
