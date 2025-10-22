@@ -7,7 +7,7 @@ use compression_prompt::compressor::{Compressor, CompressorConfig};
 use compression_prompt::statistical_filter::{StatisticalFilter, StatisticalFilterConfig};
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ABTest {
@@ -250,7 +250,7 @@ fn test_hybrid_compression(
 
 fn save_individual_tests(
     suite: &ABTestSuite,
-    output_dir: &PathBuf,
+    output_dir: &Path,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let individual_dir = output_dir.join("individual_tests");
     fs::create_dir_all(&individual_dir)?;
@@ -268,7 +268,7 @@ fn save_individual_tests(
 
 fn generate_markdown_comparison(
     suite: &ABTestSuite,
-    output_dir: &PathBuf,
+    output_dir: &Path,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut markdown = String::new();
 
