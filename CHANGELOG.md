@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Token-Aware Semantic Preservation
+- **Protection mask system** for code structures and technical content
+  - Code blocks (` ```...``` `) automatically protected from compression
+  - JSON/YAML structures preserved intact
+  - File paths and URLs protected (`src/main.rs`, `http://...`)
+  - Identifiers preserved (camelCase, snake_case, UPPER_SNAKE)
+  - Hashes and large numbers protected
+- **Contextual stopword filtering** for smarter compression
+  - "to" preserved in infinitives ("how to", "steps to")
+  - "in/on/at" preserved before paths ("in src/main.rs")
+  - "is/are" preserved in technical assertions ("X is deprecated")
+  - "and/or" preserved between important terms
+- **Critical term preservation** with priority scores
+  - Negations always preserved ("not", "never", "don't", etc.)
+  - Comparators protected (">=", "!=", "===", etc.)
+  - Modal qualifiers preserved ("only", "must", "at least", etc.)
+  - Domain-specific terms (configurable list)
+- **Gap-filling algorithm** prevents readability issues
+  - Re-adds tokens between widely-separated critical terms
+  - Configurable gap threshold (default: 3 tokens)
+  - Maintains semantic flow even with aggressive compression
+- **12 comprehensive tests** for all protection features
+  - Code block, JSON, path, and identifier protection
+  - Contextual stopword preservation
+  - Negation and comparator handling
+  - Domain term preservation
+  - Gap filling between critical tokens
+  - Feature toggle tests (can disable all protections)
+
+### Changed - Enhanced Configuration Options
+- **StatisticalFilterConfig extended** with new fields:
+  - `enable_protection_masks: bool` (default: `true`)
+  - `enable_contextual_stopwords: bool` (default: `true`)
+  - `preserve_negations: bool` (default: `true`)
+  - `preserve_comparators: bool` (default: `true`)
+  - `domain_terms: Vec<String>` (default: ["Vectorizer", "Synap", "UMICP", "Graphs"])
+  - `min_gap_between_critical: usize` (default: `3`)
+- **Priority-based scoring** for critical terms
+  - Domain terms: ∞ (always preserve)
+  - Negations/comparators: 10.0 (very high priority)
+  - Modal qualifiers: 5.0 (high priority)
+  - Protected spans: ∞ (never remove)
+
+### Improved - Character-Level Position Tracking
+- Accurate word-to-character position mapping
+- Proper overlap detection with protected spans
+- Handles multi-character Unicode correctly
+
 ### Planned
 - Streaming support for large inputs
 - Advanced optimizations (context-aware extraction, domain-specific tuning)

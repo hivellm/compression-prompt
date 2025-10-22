@@ -61,37 +61,60 @@ Compression-Prompt is a statistical filtering library that reduces LLM token usa
 
 ### 1. Statistical Filter (`statistical_filter.rs`)
 
-**Purpose**: Main compression engine using word importance scoring
+**Purpose**: Main compression engine using word importance scoring with token-aware semantic preservation
 
 **Key Functions**:
 ```rust
 pub fn compress(&self, text: &str, tokenizer: &dyn Tokenizer) -> String
 pub fn score_tokens(&self, text: &str, tokenizer: &dyn Tokenizer) -> Vec<TokenImportance>
+fn detect_protected_spans(&self, text: &str) -> Vec<ProtectedSpan>
+fn is_critical_term(&self, word: &str) -> Option<f64>
+fn should_preserve_stopword(&self, word: &str, context_before: &[&str], context_after: &[&str]) -> bool
 ```
 
 **Algorithm**:
-1. Split text into words
-2. Calculate importance score for each word:
-   - IDF: Rare words score higher
-   - Position: Start/end words score higher
-   - POS: Content words > function words
-   - Entities: Names, numbers score high
-   - Entropy: Diverse vocabulary scores high
-3. Sort words by score (descending)
-4. Keep top N% (based on `compression_ratio`)
-5. Reconstruct text maintaining original order
+1. **Detect protected spans** (code blocks, JSON, paths, identifiers)
+2. **Split text into words** and build character position mapping
+3. Calculate importance score for each word:
+   - **Critical terms**: Domain terms (∞), negations (10.0), comparators (10.0)
+   - **Protected spans**: Words overlapping protected regions (∞)
+   - **Standard scoring**:
+     - IDF: Rare words score higher
+     - Position: Start/end words score higher
+     - POS: Content words > function words (with contextual stopword preservation)
+     - Entities: Names, numbers score high
+     - Entropy: Diverse vocabulary scores high
+4. Sort words by score (descending)
+5. Keep top N% (based on `compression_ratio`)
+6. **Fill gaps** between critical tokens (if gap > threshold)
+7. Reconstruct text maintaining original order
 
 **Configuration**:
 ```rust
 pub struct StatisticalFilterConfig {
+    // Core compression settings
     pub compression_ratio: f32,  // 0.3-0.7 (default: 0.5)
     pub idf_weight: f32,         // Default: 0.3
     pub position_weight: f32,    // Default: 0.2
     pub pos_weight: f32,         // Default: 0.2
     pub entity_weight: f32,      // Default: 0.2
     pub entropy_weight: f32,     // Default: 0.1
+    
+    // Token-aware semantic preservation
+    pub enable_protection_masks: bool,        // Default: true
+    pub enable_contextual_stopwords: bool,    // Default: true
+    pub preserve_negations: bool,             // Default: true
+    pub preserve_comparators: bool,           // Default: true
+    pub domain_terms: Vec<String>,            // Default: ["Vectorizer", "Synap", "UMICP", "Graphs"]
+    pub min_gap_between_critical: usize,      // Default: 3
 }
 ```
+
+**Token-Aware Protection Features**:
+- **Protection Masks**: Automatically detect and preserve code blocks, JSON, paths, identifiers, hashes
+- **Contextual Stopwords**: Preserve stopwords when contextually important ("how to", "in src/", etc.)
+- **Critical Terms**: Always preserve negations, comparators, modal qualifiers, domain-specific terms
+- **Gap Filling**: Re-add tokens between widely-separated critical terms for readability
 
 ### 2. Quality Metrics (`quality_metrics.rs`)
 

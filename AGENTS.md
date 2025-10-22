@@ -184,3 +184,50 @@ Advanced discovery pipeline:
 4. **Prefer batch operations** when searching for multiple related items
 5. **Use by_file_type** when working with Rust files in `/rust` directory
 
+---
+
+## Synap Instructions
+
+**Use MCP Synap for short-term data storage and session state.**
+
+Synap provides fast key-value storage, queuing, and pub/sub capabilities for temporary data during AI sessions.
+
+### When to Use Synap
+
+1. **Session State**: Store temporary variables, counters, or flags during task execution
+2. **Inter-Step Data**: Pass data between different steps of complex workflows
+3. **Cache Results**: Store intermediate computation results to avoid re-computation
+4. **Task Coordination**: Queue tasks or publish events for async operations
+
+### Primary Functions
+
+#### Key-Value Store
+- `mcp_Synap_synap_kv_set`: Store temporary data with optional TTL
+- `mcp_Synap_synap_kv_get`: Retrieve stored values
+- `mcp_Synap_synap_kv_delete`: Remove keys when done
+- `mcp_Synap_synap_kv_scan`: Find keys by prefix pattern
+
+#### Queues & Streams
+- `mcp_Synap_synap_queue_publish`: Send messages to queues
+- `mcp_Synap_synap_queue_consume`: Receive queued messages
+- `mcp_Synap_synap_stream_publish`: Publish events to streams
+- `mcp_Synap_synap_pubsub_publish`: Broadcast to pub/sub topics
+
+### Best Practices
+
+1. **Use TTL**: Set expiration times for temporary data
+2. **Prefix keys**: Use namespaces like `session:`, `cache:`, `task:`
+3. **Clean up**: Delete keys when no longer needed
+4. **Don't store large files**: Use for metadata and small data only
+
+### Example Use Cases
+
+```
+✅ Store progress counter during multi-file refactoring
+✅ Cache API responses temporarily
+✅ Queue tasks for sequential processing
+✅ Store session variables across tool calls
+❌ Don't store entire file contents (use vectorizer instead)
+❌ Don't use for permanent data (commit to git instead)
+```
+

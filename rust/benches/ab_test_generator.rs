@@ -1,5 +1,5 @@
 //! Generate A/B test files for LLM comparison
-//! 
+//!
 //! Creates matched pairs of original vs compressed prompts
 //! for testing with actual language models
 
@@ -49,14 +49,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Load datasets
     let benchmark_files = vec![
-        ("benchmark_100", "../benchmarks/datasets/prompts/benchmark_100_papers.txt"),
-        ("benchmark_200", "../benchmarks/datasets/prompts/benchmark_200_papers.txt"),
+        (
+            "benchmark_100",
+            "../benchmarks/datasets/prompts/benchmark_100_papers.txt",
+        ),
+        (
+            "benchmark_200",
+            "../benchmarks/datasets/prompts/benchmark_200_papers.txt",
+        ),
     ];
 
     for (name, path) in benchmark_files {
         if let Ok(content) = fs::read_to_string(path) {
             println!("📄 Processing: {}", name);
-            
+
             // Split into individual papers
             let papers: Vec<&str> = content
                 .split("\n\n")
@@ -285,52 +291,73 @@ fn generate_markdown_comparison(
     markdown.push_str("|-----------|----------------------|-------------------|-------|\n");
 
     let techniques = vec!["dictionary", "statistical_50%", "statistical_70%", "hybrid"];
-    
+
     for technique in techniques {
-        let tests: Vec<_> = suite.tests.iter()
+        let tests: Vec<_> = suite
+            .tests
+            .iter()
             .filter(|t| t.technique == technique)
             .collect();
-        
+
         if !tests.is_empty() {
-            let avg_ratio: f64 = tests.iter().map(|t| t.compression_ratio).sum::<f64>() 
-                / tests.len() as f64;
-            let avg_savings: f64 = tests.iter()
+            let avg_ratio: f64 =
+                tests.iter().map(|t| t.compression_ratio).sum::<f64>() / tests.len() as f64;
+            let avg_savings: f64 = tests
+                .iter()
                 .map(|t| ((1.0 - t.compression_ratio) * 100.0))
-                .sum::<f64>() / tests.len() as f64;
-            
+                .sum::<f64>()
+                / tests.len() as f64;
+
             markdown.push_str(&format!(
                 "| {} | {:.3} | {:.1}% | {} |\n",
-                technique, avg_ratio, avg_savings, tests.len()
+                technique,
+                avg_ratio,
+                avg_savings,
+                tests.len()
             ));
         }
     }
 
     markdown.push_str("\n## Individual Test Results\n\n");
-    
+
     for test in &suite.tests {
         markdown.push_str(&format!("### {}\n\n", test.test_id));
         markdown.push_str(&format!("**Technique:** {}\n\n", test.technique));
         markdown.push_str(&format!("- Original tokens: {}\n", test.original_tokens));
-        markdown.push_str(&format!("- Compressed tokens: {}\n", test.compressed_tokens));
-        markdown.push_str(&format!("- Compression ratio: {:.3}\n", test.compression_ratio));
-        markdown.push_str(&format!("- Token savings: {:.1}%\n", (1.0 - test.compression_ratio) * 100.0));
-        markdown.push_str(&format!("- Processing time: {:.2}ms\n", test.metadata.processing_time_ms));
-        
+        markdown.push_str(&format!(
+            "- Compressed tokens: {}\n",
+            test.compressed_tokens
+        ));
+        markdown.push_str(&format!(
+            "- Compression ratio: {:.3}\n",
+            test.compression_ratio
+        ));
+        markdown.push_str(&format!(
+            "- Token savings: {:.1}%\n",
+            (1.0 - test.compression_ratio) * 100.0
+        ));
+        markdown.push_str(&format!(
+            "- Processing time: {:.2}ms\n",
+            test.metadata.processing_time_ms
+        ));
+
         if let Some(entries) = test.metadata.dictionary_entries {
             markdown.push_str(&format!("- Dictionary entries: {}\n", entries));
         }
         if let Some(subs) = test.metadata.substitutions {
             markdown.push_str(&format!("- Substitutions: {}\n", subs));
         }
-        
+
         markdown.push_str("\n---\n\n");
     }
 
     let markdown_file = output_dir.join("ab_test_comparison.md");
     fs::write(&markdown_file, markdown)?;
 
-    println!("📊 Generated comparison report: {}", markdown_file.display());
+    println!(
+        "📊 Generated comparison report: {}",
+        markdown_file.display()
+    );
 
     Ok(())
 }
-

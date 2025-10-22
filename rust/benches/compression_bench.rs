@@ -1,12 +1,12 @@
 //! Benchmark suite for compression techniques
-//! 
+//!
 //! Tests dictionary compression, statistical filtering, and hybrid approaches
 //! Generates A/B test results for comparison with larger models
 
 use compression_prompt::compressor::{Compressor, CompressorConfig};
 use compression_prompt::statistical_filter::{StatisticalFilter, StatisticalFilterConfig};
 use compression_prompt::tokenizer::{MockTokenizer, Tokenizer};
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use criterion::{BenchmarkId, Criterion, Throughput, black_box, criterion_group, criterion_main};
 use std::fs;
 
 /// Load benchmark datasets
@@ -15,8 +15,14 @@ fn load_datasets() -> Vec<(String, String)> {
 
     // Try to load benchmark files
     let files = vec![
-        ("100_papers", "../benchmarks/datasets/prompts/benchmark_100_papers.txt"),
-        ("200_papers", "../benchmarks/datasets/prompts/benchmark_200_papers.txt"),
+        (
+            "100_papers",
+            "../benchmarks/datasets/prompts/benchmark_100_papers.txt",
+        ),
+        (
+            "200_papers",
+            "../benchmarks/datasets/prompts/benchmark_200_papers.txt",
+        ),
     ];
 
     for (name, path) in files {
@@ -37,13 +43,13 @@ fn load_datasets() -> Vec<(String, String)> {
 /// Generate synthetic academic paper for testing
 fn generate_synthetic_paper() -> String {
     let mut paper = String::new();
-    
+
     paper.push_str("# A Survey of Large Language Models\n\n");
     paper.push_str("## Abstract\n\n");
     paper.push_str("Large language models (LLMs) have demonstrated remarkable capabilities across various natural language processing tasks. ");
     paper.push_str("This paper surveys recent advances in LLMs, including transformer architectures, pre-training methods, and fine-tuning strategies. ");
     paper.push_str("We analyze the performance characteristics of leading models and discuss future research directions.\n\n");
-    
+
     for section in 1..=5 {
         paper.push_str(&format!("## Section {}\n\n", section));
         for _ in 0..10 {
@@ -53,7 +59,7 @@ fn generate_synthetic_paper() -> String {
             paper.push_str("Fine-tuning on task-specific data further improves performance on downstream applications.\n\n");
         }
     }
-    
+
     paper
 }
 
@@ -67,16 +73,12 @@ fn bench_dictionary_compression(c: &mut Criterion) {
     for (name, dataset) in load_datasets() {
         let size = dataset.len();
         group.throughput(Throughput::Bytes(size as u64));
-        
-        group.bench_with_input(
-            BenchmarkId::new("dict", &name),
-            &dataset,
-            |b, data| {
-                b.iter(|| {
-                    let _ = compressor.compress(black_box(data), &tokenizer);
-                });
-            },
-        );
+
+        group.bench_with_input(BenchmarkId::new("dict", &name), &dataset, |b, data| {
+            b.iter(|| {
+                let _ = compressor.compress(black_box(data), &tokenizer);
+            });
+        });
     }
 
     group.finish();
@@ -86,20 +88,20 @@ fn bench_dictionary_compression(c: &mut Criterion) {
 fn bench_statistical_filtering(c: &mut Criterion) {
     let mut group = c.benchmark_group("statistical_filtering");
     let tokenizer = MockTokenizer;
-    
+
     let ratios = vec![0.3, 0.5, 0.7];
-    
+
     for (name, dataset) in load_datasets() {
         let size = dataset.len();
         group.throughput(Throughput::Bytes(size as u64));
-        
+
         for ratio in &ratios {
             let config = StatisticalFilterConfig {
                 compression_ratio: *ratio,
                 ..Default::default()
             };
             let filter = StatisticalFilter::new(config);
-            
+
             group.bench_with_input(
                 BenchmarkId::new(format!("stat_{:.0}%", ratio * 100.0), &name),
                 &dataset,
@@ -119,10 +121,10 @@ fn bench_statistical_filtering(c: &mut Criterion) {
 fn bench_hybrid_compression(c: &mut Criterion) {
     let mut group = c.benchmark_group("hybrid_compression");
     let tokenizer = MockTokenizer;
-    
+
     let dict_config = CompressorConfig::default();
     let dict_compressor = Compressor::new(dict_config);
-    
+
     let stat_config = StatisticalFilterConfig {
         compression_ratio: 0.5,
         ..Default::default()
@@ -132,20 +134,16 @@ fn bench_hybrid_compression(c: &mut Criterion) {
     for (name, dataset) in load_datasets() {
         let size = dataset.len();
         group.throughput(Throughput::Bytes(size as u64));
-        
-        group.bench_with_input(
-            BenchmarkId::new("hybrid", &name),
-            &dataset,
-            |b, data| {
-                b.iter(|| {
-                    // First apply dictionary compression
-                    if let Ok(dict_result) = dict_compressor.compress(black_box(data), &tokenizer) {
-                        // Then apply statistical filtering
-                        let _ = stat_filter.compress(&dict_result.compressed, &tokenizer);
-                    }
-                });
-            },
-        );
+
+        group.bench_with_input(BenchmarkId::new("hybrid", &name), &dataset, |b, data| {
+            b.iter(|| {
+                // First apply dictionary compression
+                if let Ok(dict_result) = dict_compressor.compress(black_box(data), &tokenizer) {
+                    // Then apply statistical filtering
+                    let _ = stat_filter.compress(&dict_result.compressed, &tokenizer);
+                }
+            });
+        });
     }
 
     group.finish();
@@ -158,17 +156,21 @@ fn bench_compression_ratios(c: &mut Criterion) {
 
     for (name, dataset) in load_datasets() {
         let original_tokens = tokenizer.count_tokens(&dataset);
-        
+
         // Dictionary compression
         let dict_config = CompressorConfig::default();
         let dict_compressor = Compressor::new(dict_config);
-        
+
         if let Ok(result) = dict_compressor.compress(&dataset, &tokenizer) {
             let ratio = result.compression_ratio;
-            println!("Dataset '{}' - Dictionary: {:.3} compression ratio ({:.1}% savings)", 
-                     name, ratio, (1.0 - ratio) * 100.0);
+            println!(
+                "Dataset '{}' - Dictionary: {:.3} compression ratio ({:.1}% savings)",
+                name,
+                ratio,
+                (1.0 - ratio) * 100.0
+            );
         }
-        
+
         // Statistical filtering
         for target_ratio in &[0.3, 0.5, 0.7] {
             let stat_config = StatisticalFilterConfig {
@@ -179,9 +181,13 @@ fn bench_compression_ratios(c: &mut Criterion) {
             let compressed = stat_filter.compress(&dataset, &tokenizer);
             let compressed_tokens = tokenizer.count_tokens(&compressed);
             let actual_ratio = compressed_tokens as f64 / original_tokens as f64;
-            
-            println!("Dataset '{}' - Statistical {:.0}%: {:.3} actual ratio", 
-                     name, target_ratio * 100.0, actual_ratio);
+
+            println!(
+                "Dataset '{}' - Statistical {:.0}%: {:.3} actual ratio",
+                name,
+                target_ratio * 100.0,
+                actual_ratio
+            );
         }
     }
 
@@ -196,4 +202,3 @@ criterion_group!(
     bench_compression_ratios
 );
 criterion_main!(benches);
-

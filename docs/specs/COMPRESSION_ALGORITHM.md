@@ -207,6 +207,114 @@ Original Order: "Bayesian prior distribution"
 
 ---
 
+## Token-Aware Protection System
+
+### Overview
+
+The statistical filter includes intelligent protection mechanisms that preserve code structures, technical content, and semantic-critical elements even during aggressive compression.
+
+### Protected Span Types
+
+The algorithm automatically detects and protects the following:
+
+1. **Code Blocks**: ` ```...``` ` (markdown code fences)
+2. **JSON/YAML**: `{...}`, `[...]` with structural characters
+3. **File Paths**: `src/main.rs`, `/path/to/file.ext`, `http://example.com`
+4. **Identifiers**:
+   - `camelCase`: `getUserData`, `setDefaultValue`
+   - `snake_case`: `user_service`, `process_data`
+   - `UPPER_SNAKE`: `MAX_SIZE`, `API_KEY`
+5. **Hashes/Numbers**: `0x1a2b3c`, UUIDs, large numbers (≥3 digits)
+6. **Brackets**: Content within `{}`, `[]`, `()` pairs
+
+### Detection Rules
+
+**Regex Patterns**:
+```rust
+Code blocks:    ```[\s\S]*?```
+JSON blocks:    \{[^}]*:[^}]*\}
+Paths:          (?:[A-Za-z]+:)?//[^\s]+|[/\\][\w/\\.-]+\.[A-Za-z0-9]{1,5}\b
+CamelCase:      \b[A-Z][a-z0-9]+[A-Z][A-Za-z0-9]+\b
+snake_case:     \b[a-z_][a-z0-9_]{2,}\b (with underscore)
+UPPER_SNAKE:    \b[A-Z][A-Z0-9_]+\b
+Hashes:         \b[0-9a-f]{7,}\b|\b\d{3,}\b
+Brackets:       [\{\[\(][^\}\]\)]*[\}\]\)]
+```
+
+**Protection Behavior**: 
+- Words overlapping with protected spans receive score = ∞
+- They are never removed, regardless of compression ratio
+
+### Contextual Stopword Preservation
+
+Enhanced stopword filtering that checks context before removal:
+
+**"to" in infinitives/phrasal verbs:**
+```
+"how to reproduce" → "to" kept
+"steps to follow" → "to" kept
+"going to store" → "to" may be removed
+```
+
+**"in/on/at" before paths/technical terms:**
+```
+"check in src/main.rs" → "in" kept
+"defined in UserService" → "in" kept
+"sitting in chair" → "in" may be removed
+```
+
+**"is/are/was/were" in assertions:**
+```
+"Vectorizer is deprecated" → "is" kept
+"Component is critical" → "is" kept
+"he is happy" → "is" may be removed
+```
+
+**"and/or" between important terms:**
+```
+"Vectorizer and Synap" → "and" kept
+"apples and oranges" → "and" may be removed
+```
+
+### Critical Term Preservation
+
+Terms that must always be preserved with priority scores:
+
+| Term Category | Examples | Score | Behavior |
+|--------------|----------|-------|----------|
+| **Domain Terms** | Vectorizer, Synap, UMICP | ∞ | Always kept |
+| **Negations** | not, never, don't, won't | 10.0 | Very high priority |
+| **Comparators** | !=, >=, <=, ==, === | 10.0 | Very high priority |
+| **Modal Qualifiers** | only, must, at least | 5.0 | High priority |
+
+**Configuration**:
+```rust
+domain_terms: Vec<String>  // Default: ["Vectorizer", "Synap", "UMICP", "Graphs"]
+preserve_negations: bool   // Default: true
+preserve_comparators: bool // Default: true
+```
+
+### Gap-Filling Algorithm
+
+Prevents readability issues when critical terms are separated by large gaps:
+
+**Problem**: 
+```
+Original:  "Vectorizer is a critical component that handles data"
+Compressed: "Vectorizer data" (gap too large)
+```
+
+**Solution**:
+1. Identify critical tokens (score > 0.8)
+2. Find gaps larger than threshold (default: 3 positions)
+3. Re-add highest-scored token from gap
+4. Result: "Vectorizer component data" (better flow)
+
+**Configuration**:
+```rust
+min_gap_between_critical: usize  // Default: 3
+```
+
 ## Configuration
 
 ### StatisticalFilterConfig
@@ -230,6 +338,25 @@ pub struct StatisticalFilterConfig {
     
     /// Weight for entropy component (0.0 to 1.0)
     pub entropy_weight: f64,
+    
+    // Token-aware semantic preservation
+    /// Enable protection masks for code/JSON/paths
+    pub enable_protection_masks: bool,
+    
+    /// Enable contextual stopword filtering
+    pub enable_contextual_stopwords: bool,
+    
+    /// Preserve negations (not, never, etc.)
+    pub preserve_negations: bool,
+    
+    /// Preserve comparators (>=, !=, etc.)
+    pub preserve_comparators: bool,
+    
+    /// Domain-specific terms to always preserve
+    pub domain_terms: Vec<String>,
+    
+    /// Min gap between critical tokens before re-adding
+    pub min_gap_between_critical: usize,
 }
 ```
 
@@ -245,6 +372,18 @@ impl Default for StatisticalFilterConfig {
             pos_weight: 0.2,
             entity_weight: 0.2,
             entropy_weight: 0.1,
+            // Token-aware semantic preservation (all enabled)
+            enable_protection_masks: true,
+            enable_contextual_stopwords: true,
+            preserve_negations: true,
+            preserve_comparators: true,
+            domain_terms: vec![
+                "Vectorizer".to_string(),
+                "Synap".to_string(),
+                "UMICP".to_string(),
+                "Graphs".to_string(),
+            ],
+            min_gap_between_critical: 3,
         }
     }
 }
