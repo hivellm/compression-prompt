@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "compression-prompt"
+name = "compression_prompt"
 version = "0.1.0"
 description = "Fast statistical compression for LLM prompts - 50% token reduction with 91% quality retention"
 readme = "README.md"

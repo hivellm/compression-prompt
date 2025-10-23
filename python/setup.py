@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="compression-prompt",
+    name="compression_prompt",
     version="0.1.0",
     author="HiveLLM Team",
     author_email="team@hivellm.org",
